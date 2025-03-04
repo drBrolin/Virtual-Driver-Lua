@@ -1,0 +1,303 @@
+
+function initPlugin()
+	-- --Select manikin family
+	-- command1 = Plugin.createCommand("selectManikinFunction()")
+	-- Plugin.addToMenu('Vehicle Ergonomics', command1)
+	
+	-- command1:setMenuText("Select manikin family")
+	-- command1:setHelpText("Select manikin family.")
+	-- command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	-- command1:setToolTipText("Select manikin family.")
+	-- command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	-- command1:setHotkeyName("Select manikin family") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Pelvis angle
+	command1 = Plugin.createCommand("getPelvisAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command1)
+	
+	command1:setMenuText("Get pelvis angle")
+	command1:setHelpText("Get pelvis angle of the manikin.")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Get pelvis angle of the manikin defined between pelvis and vertical.")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("Driver angles.Get pelvis angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Torso angle
+	command2 = Plugin.createCommand("getTorsoAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command2)
+	
+	command2:setMenuText("Get torso angle")
+	command2:setHelpText("Get torso angle of the manikin.")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Get torso angle of the manikin defined between torso line and vertical.")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Driver angles.Get torso angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Hip angle
+	command3 = Plugin.createCommand("getHipAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command3)
+	
+	command3:setMenuText("Get hip angle")
+	command3:setHelpText("Get hip angle of the manikin.")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Get hip angle of the manikin, two variants.")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("Driver angles.Get hip angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Knee angles
+	command4 = Plugin.createCommand("getKneeAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command4)
+	
+	command4:setMenuText("Get knee angle")
+	command4:setHelpText("Get knee angle of the manikin.")
+	command4:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command4:setToolTipText("Get knee angle of the manikin.")
+	command4:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command4:setHotkeyName("Driver angles.Get knee ") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Neck angle (example)
+	command5 = Plugin.createCommand("callNeckAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command5)
+	
+	command5:setMenuText("Get neck angle")
+	command5:setHelpText("Get neck angle of the manikin.")
+	command5:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command5:setToolTipText("Get neck angle of the manikin defined between T1T2 to AtlantoAxial.")
+	command5:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command5:setHotkeyName("Driver angles.Get neck angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--All angles
+	command6 = Plugin.createCommand("getAllAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command6)
+	
+	command6:setMenuText("Get all driver angles")
+	command6:setHelpText("Get all driver angles of the manikin.")
+	command6:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command6:setToolTipText("Get all driver angles of the manikin.")
+	command6:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command6:setHotkeyName("Driver angles.Get all driver angles") -- Name of hotkey combination in preferences -> hotkeys dialog
+
+end
+
+
+
+function getPelvisAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+	-- TODO: Get the representative or a drop down of manikins
+	if not(fam == nil) then
+		local RightHipTrans = fam:getJointTransformationForManikin(0,"RightHip");
+		local LeftHipTrans = fam:getJointTransformationForManikin(0,"LeftHip");
+		local L5S1Trans = fam:getJointTransformationForManikin(0,"L5S1");
+		
+		--Set the middle point between hip joints
+		local midHip = (RightHipTrans["t"] + LeftHipTrans["t"])/2;
+		
+		--Translate L5S1 into vector to be able to make an operation after obtaining translation vectors
+		local L5S1Vec = L5S1Trans["t"];
+
+		--Calculate vectors from midHip to L5S1
+		local midHip2L5S1Vec = L5S1Vec - midHip;
+		
+		pelvisAngle = math.deg(math.atan(midHip2L5S1Vec[0]/midHip2L5S1Vec[2]));
+		print("Pelvis angle: " ..tostring(pelvisAngle));
+		-- Ips.alert("Pelvis angle: " ..tostring(pelvisAngle));
+		
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function getTorsoAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	if not(fam == nil) then
+		local RightHipTrans = fam:getJointTransformationForManikin(0,"RightHip");
+		local LeftHipTrans = fam:getJointTransformationForManikin(0,"LeftHip");
+		local RightShoulderTrans = fam:getJointTransformationForManikin(0,"RightGH");
+		local LeftShoulderTrans = fam:getJointTransformationForManikin(0,"LeftGH");
+		
+		--Set the middle point between hip and shoulder joints
+		local midHip = (RightHipTrans["t"] + LeftHipTrans["t"])/2;
+		local midShoulder = (RightShoulderTrans["t"] + LeftShoulderTrans["t"])/2;
+		
+		--Calculate vectors from midHip to L5S1
+		local midHip2midShoulderVec = midShoulder - midHip;
+		
+		torsoAngle = math.deg(math.atan(midHip2midShoulderVec[0]/midHip2midShoulderVec[2]));
+		print("Torso angle: " ..tostring(torsoAngle));
+		--Ips.alert("Torso angle: " ..tostring(torsoAngle));		
+		
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function getHipAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	if not(fam == nil) then
+		local RightHipTrans = fam:getJointTransformationForManikin(0,"RightHip");
+		local LeftHipTrans = fam:getJointTransformationForManikin(0,"LeftHip");
+		local RightShoulderTrans = fam:getJointTransformationForManikin(0,"RightGH");
+		local LeftShoulderTrans = fam:getJointTransformationForManikin(0,"LeftGH");
+		local RightKneeTrans = fam:getJointTransformationForManikin(0,"RightKnee");
+		local LeftKneeTrans = fam:getJointTransformationForManikin(0,"LeftKnee");
+		
+		--Set the middle point between hip and shoulder joints
+		local midHip = (RightHipTrans["t"] + LeftHipTrans["t"])/2;
+		local midShoulder = (RightShoulderTrans["t"] + LeftShoulderTrans["t"])/2;
+		local midKnee = (RightKneeTrans["t"] + LeftKneeTrans["t"])/2;
+				
+		--midHip2midShoulder = b
+		local diffVec = midShoulder - midHip;
+		b = math.sqrt ( diffVec[0] * diffVec[0] + diffVec[2] * diffVec[2] );
+		--midHip2midKnee = c
+		local diffVec = midKnee - midHip;
+		c = math.sqrt ( diffVec[0] * diffVec[0] + diffVec[2] * diffVec[2] );
+		--midKnee2midShoulder = a
+		local diffVec = midShoulder - midKnee;
+		a = math.sqrt ( diffVec[0] * diffVec[0] + diffVec[2] * diffVec[2] );
+			
+		hipAngle1 = math.deg(math.acos((b*b + c*c - a*a) / (2*b*c)));
+		print("Hip angle (from torso to thigh): " ..tostring(hipAngle1));
+		
+		--Calculate vectors from midHip to knee
+		local diffVec = midKnee - midHip;
+		hipAngle2 = math.deg(math.atan(diffVec[0]/diffVec[2]));
+		print("Hip angle (from vertical to thigh): " ..tostring(hipAngle2));
+		-- Ips.alert("Hip angle:\nFrom torso to thigh: "..tostring(hipAngle1).."\nFrom vertical to thigh: "..tostring(hipAngle2));
+	
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function getKneeAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	if not(fam == nil) then
+		local RightKneeAngle = fam:getJointAngleForManikin(0,"RightKnee");
+		local LeftKneeAngle = fam:getJointAngleForManikin(0,"LeftKnee");
+		
+		RightKneeAngDeg = math.deg(RightKneeAngle[0]);
+		LeftKneeAngDeg = math.deg(LeftKneeAngle[0]);
+		
+		print("RightKneeAngle: " ..tostring(RightKneeAngDeg));
+		print("LeftKneeAngle: " ..tostring(LeftKneeAngDeg));	
+		-- Ips.alert("Knee angle:\nRight knee: "..tostring(RightKneeAngDeg).."\nLeft knee: "..tostring(LeftKneeAngDeg));		
+		
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function callNeckAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily();
+	-- TODO: Get the representative or a drop down of manikins
+	
+	if not(fam == nil) then
+		-- Get manikins
+		mannames = fam:getManikinNames();
+		-- For each manikin
+		local T1T2Trans = fam:getJointTransformationForManikin(iMani,"T1T2");
+		local C6C7Trans = fam:getJointTransformationForManikin(iMani,"C6C7");
+		local AATrans = fam:getJointTransformationForManikin(iMani,"AtlantoAxial");
+		
+		local C7T1Vec = (C6C7Trans["t"] + T1T2Trans["t"])/2;
+		--Translate into vectors to be able to make an operation after obtaining translation vectors
+		--local T1T2Vec = T1T2Trans["t"];
+		local AAVec = AATrans["t"];
+
+		--Calculate vectors
+		local C7T12AAVec = AAVec - C7T1Vec;
+		local xyProject = math.sqrt((C7T12AAVec[0]^2) + (C7T12AAVec[1]^2))*math.sign(C7T12AAVec[0]);
+		local neckAngle = math.deg(math.atan(xyProject/C7T12AAVec[2]));
+		
+		print("Neck angle: " ..tostring(neckAngle));
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function getNeckAngleFunction(fam,iMani) -- T1T2 to AtlantoAxial (C7T1 to Tragion in Reed)
+	local T1T2Trans = fam:getJointTransformationForManikin(iMani,"T1T2");
+	local C6C7Trans = fam:getJointTransformationForManikin(iMani,"C6C7");
+	local AATrans = fam:getJointTransformationForManikin(iMani,"AtlantoAxial");
+	
+	local C7T1Vec = (C6C7Trans["t"] + T1T2Trans["t"])/2;
+	--Translate into vectors to be able to make an operation after obtaining translation vectors
+	--local T1T2Vec = T1T2Trans["t"];
+	local AAVec = AATrans["t"];
+
+	--Calculate vectors
+	local C7T12AAVec = AAVec - C7T1Vec;
+	local xyProject = math.sqrt((C7T12AAVec[0]^2) + (C7T12AAVec[1]^2))*math.sign(C7T12AAVec[0]);
+	local neckAngle = math.deg(math.atan(xyProject/C7T12AAVec[2]));
+	--print("Neck angle: " ..tostring(neckAngle));
+
+	return neckAngle;
+end
+
+function getAllAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	if not(fam == nil) then
+		getPelvisAngleFunction();
+		getTorsoAngleFunction();
+		getHipAngleFunction();
+		getKneeAngleFunction();	
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+
+--Global variables to save user selection
+SelectedFamily = -1;
+
+
+function selectManikinFamily()
+	local root = Ips.getActiveObjectsRoot();
+	local belowRoot = root:getNextSibling();
+	local obj = root;
+	familyvector = TreeObjectVector();
+	while (not(obj == nil) and not(obj:equals(belowRoot))) do
+		if (obj:isManikinFamilyVisualization()) then
+			familyvector:push_back(obj); -- Push family in to familyvector
+		end
+		obj = obj:getObjectBelow();
+	end
+	
+	familynames = StringVector();
+	for i = 0, familyvector:size() - 1 do
+		namefam = tostring(familyvector[i]:getLabel());
+		familynames:push_back(namefam);
+	end
+	if (familyvector:size() == 1) then -- Checks if a selection of manikin family is needed.
+		famvis = familyvector[0]:toManikinFamilyVisualization();
+	elseif (familyvector:size() == 0) then
+		Ips.alert("No manikin families exist in tree!");
+		return; -- How is this inserted?
+	else
+		familySelection = Ips.inputDropDownList("Family selection", "Select the manikin family", familynames);
+		if (familySelection == -1) then -- Hanterar fel
+			Ips.alert("Error in input!");
+			--return; -- How is this inserted?
+		end
+		famvis = familyvector[familySelection]:toManikinFamilyVisualization();
+	end
+	fam = famvis:getManikinFamily(); -- Get selected family.
+	return fam;
+end

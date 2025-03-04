@@ -1,0 +1,102 @@
+-- This is the function executed during startup of IPS to register the plugin (create buttons and menu items)
+
+function initPlugin()
+	--Select vdeGenerateFrames
+	command1 = Plugin.createCommand("vdeGenerateFrames()")
+	Plugin.addToMenu('Vehicle Ergonomics.Statistical Posture Prediction', command1)
+	command1:setMenuText("Generate control frames")
+	command1:setHelpText("Generate control frames for adjustment ranges and reference points")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Generate control frames for adjustment ranges and reference points")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("Statistical Posture Prediction.Generate control frames") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	command3 = Plugin.createCommand("genericStatModel()")
+	Plugin.addToMenu('Vehicle Ergonomics.Statistical Posture Prediction', command3)
+	command3:setMenuText("Generic Statistical Posture Prediction")
+	command3:setHelpText("Predict points inside adjustment ranges for each manikin in family")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Predict points inside adjustment ranges for each manikin in family")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("Statistical Posture Prediction.Generic Statistical Posture Prediction") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	command2 = Plugin.createCommand("vdeAdvStatModel()")
+	Plugin.addToMenu('Vehicle Ergonomics.Statistical Posture Prediction', command2)
+	command2:setMenuText("Statistical Posture Prediction (single-manikin)")
+	command2:setHelpText("Predict mid-hip and centre eye and move them inside adjustment ranges")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Predict mid-hip and centre eye and move them inside adjustment ranges")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Statistical Posture Prediction.Statistical Posture Prediction (single-manikin)") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	-- command2 = Plugin.createCommand("vdeBatchStatModel()")
+	-- Plugin.addToMenu('Vehicle Ergonomics.Statistical Posture Prediction', command2)
+	-- command2:setMenuText("Statistical Posture Prediction (manikin-family)")
+	-- command2:setHelpText("Predict mid-hip and centre eye inside adjustment ranges for each manikin in family")
+	-- command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	-- command2:setToolTipText("Predict mid-hip and centre eye inside adjustment ranges for each manikin in family")
+	-- command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	-- command2:setHotkeyName("Statistical Posture Prediction.Statistical Posture Prediction (manikin-family)") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+
+end
+
+function vdeGenerateFrames()
+	--Load files
+	dofile(scriptPath.."/StatModel/VDE_CreateFrames.lua"); --Creates seat & steering wheel adjustment frames as well as reference points for AHP, PRP and SgRP
+	
+	--Run functions
+
+	--Create seat adjustment frames 
+	createSeatTravelFrames(); --VDE_CreateFrames.lua
+	
+	--Create steering wheel adjustment frames 
+	createSteeringWheelFrames(); --VDE_CreateFrames.lua
+	
+	--Create reference points frames for AHP, PRP and SgRP  
+	createReferenceFrames(); --VDE_CreateFrames.lua
+	
+	Ips.alert("VDE control frames created");
+end
+
+function vdeAdvStatModel()
+	--Load files
+	dofile(scriptPath.."/StatModel/VDE_InputData.lua"); --Handles functions for input
+	dofile(scriptPath.."/StatModel/VDE_OutputData.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/classAPred.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/classBPred.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/VDE_DataHandler.lua"); --Handles functions for data management
+	--Run functions
+	family = selectManikinFamily(); --VDE_DataHandler.lua
+	vdeStatModel(family); --VDE_DataHandler.lua
+		
+	Ips.alert("vdeStatModel have finished");
+end
+
+-- function vdeBatchStatModel()
+	-- --Load files
+	-- dofile(scriptPath.."/StatModel/VDE_InputData.lua"); --Handles functions for input
+	-- dofile(scriptPath.."/StatModel/VDE_OutputData.lua"); --Handles functions for output
+	-- dofile(scriptPath.."/StatModel/classAPred.lua"); --Handles functions for output
+	-- dofile(scriptPath.."/StatModel/classBPred.lua"); --Handles functions for output
+	-- dofile(scriptPath.."/StatModel/VDE_BatchDataHandler.lua"); --Handles functions for data management
+	-- --Run functions
+	-- family = selectManikinFamily(); --VDE_DataHandler.lua
+	-- vdeBatchModel(family); --VDE_DataHandler.lua
+		
+	-- Ips.alert("vdeStatModel have finished");
+-- end
+
+function genericStatModel()
+	--Load files
+	dofile(scriptPath.."/StatModel/VDE_InputData.lua"); --Handles functions for input
+	dofile(scriptPath.."/StatModel/VDE_OutputData.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/classAPred.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/classBPred.lua"); --Handles functions for output
+	dofile(scriptPath.."/StatModel/genericStatPostPred.lua"); --Handles functions for data management
+	--Run functions
+	family = selectManikinFamily(); --VDE_DataHandler.lua
+	genericStatPostPred(family); --VDE_DataHandler.lua
+		
+	Ips.alert("genericStatModel have finished");
+end

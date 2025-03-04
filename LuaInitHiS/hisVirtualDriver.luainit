@@ -1,0 +1,9 @@
+--An instance of this file has to exist in the Lua Init directory
+--This directory is found by navigating to "Edit->Preferences->Scripting"
+function initPlugin()
+	--Plugin.addPluginFolder(scriptPath.."/Optimization")
+	Plugin.addPluginFolder(scriptPath.."/DriverSimulationSetup")
+	Plugin.addPluginFolder(scriptPath.."/DriverAngles")
+	--Plugin.addPluginFolder(scriptPath.."/StatModel")
+	Plugin.addPluginFolder(scriptPath.."/LoadDriverScenes")
+end

@@ -1,0 +1,116 @@
+
+-- Niosh lifting equation file. First go to Edit -> Preferences -> General -> Scripting -> "Search path for luainit files" 
+-- and specify the folder where this file is located. 
+-- Then restart IPS and you will get a new menu and a new toolbar.
+
+function initPlugin()
+
+
+	--Manikin selection
+	command0 = Plugin.createCommand("createAdjustmentSpheres()")
+	--Plugin.addToMenu('ADOPTIVE', command0)
+	
+	command0:setMenuText("Create adjustment spheres")
+	command0:setHelpText("Create adjustment spheres to define adjustment range.")
+	command0:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command0:setToolTipText("Create adjustment spheres to define adjustment range.")
+	command0:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command0:setHotkeyName("Vehicle Ergonomics.Optimization.Create spheres") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	
+	--Manikin selection
+	command1 = Plugin.createCommand("instantEvaluation()")
+	
+	
+	command1:setMenuText("Instant evaluation")
+	command1:setHelpText("Evaluate the actual position of the manikins.")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Evaluate the actual position of the manikins.")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("Vehicle Ergonomics.Optimization.Instant evaluation") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Family creation
+	command2 = Plugin.createCommand("createFamily()")
+	
+	
+	command2:setMenuText("Create family")
+	command2:setHelpText("Create family with joint angle fixes according to Reed skeleton.")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Create family with joint angle fixes according to Reed skeleton.")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Vehicle Ergonomics.Optimization.Create family") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Family creation
+	command5 = Plugin.createCommand("createDistanceMeasures()")
+	
+	
+	command5:setMenuText("Create constraints")
+	command5:setHelpText("Create distance measures against objects (constraints).")
+	command5:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command5:setToolTipText("Create distance measures against objects (constraints).")
+	command5:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command5:setHotkeyName("Vehicle Ergonomics.Optimization.Create constraints") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Family creation
+	command3 = Plugin.createCommand("moveSpheres()")
+	
+	
+	command3:setMenuText("Move spheres")
+	command3:setHelpText("Move spheres to adjustment range corners.")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Move spheres to adjustment range corners.")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("Vehicle Ergonomics.Optimization.Move spheres") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Family creation
+	command4 = Plugin.createCommand("createHeatmap()")
+	
+	
+	command4:setMenuText("Create heatmap")
+	command4:setHelpText("Create heatmap.")
+	command4:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command4:setToolTipText("Create heatmap.")
+	command4:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command4:setHotkeyName("Vehicle Ergonomics.Optimization.Create heatmap") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command2)
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command5)
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command1)
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command0)
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command3)
+	Plugin.addToMenu('Vehicle Ergonomics.Optimization', command4)
+end
+
+
+function createAdjustmentSpheres()
+	dofile(scriptPath.."/Create spheres.lua");
+	createSpheres();
+end
+
+function instantEvaluation()
+	dofile(scriptPath.."/Instant evaluation.lua");
+	evaluateDrivers();
+end
+
+function createFamily()
+	dofile(scriptPath.."/Create family.lua");
+	createDriverFamily();
+end
+
+function moveSpheres()
+	dofile(scriptPath.."/Create spheres.lua");
+	createSpheres();
+	dofile(scriptPath.."/Move spheres.lua");
+	moveSpheresToAdjustmentRange();
+end
+
+function createHeatmap()
+	dofile(scriptPath.."/DriverErgonomics/DriverErgonomicsEvaluation.lua");
+	addDriverEvaluationsToJSON()
+end
+
+function createDistanceMeasures()
+	dofile(scriptPath.."/Create measures.lua");
+	createMeasures();
+end

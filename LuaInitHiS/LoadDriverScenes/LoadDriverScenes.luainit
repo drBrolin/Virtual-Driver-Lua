@@ -1,0 +1,37 @@
+
+function initPlugin()
+	
+	--Load H-point template
+	command2 = Plugin.createCommand("loadHpointEquivalent()")
+	Plugin.addToMenu('Vehicle Ergonomics', command2)
+	
+	command2:setMenuText("Load SAE H-point equivalent") -- Should we use template or equivalent?
+	command2:setHelpText("Load SAE H-point equivalent")
+	command2:setIcon("hpoint_equivalent.png")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Load SAE H-point equivalent")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Load SAE H-point equivalent") -- Name of hotkey combination in preferences -> hotkeys dialog
+	Plugin.addToToolbar("Vehicle Ergonomics", command2)
+	
+	-- command2 = Plugin.createCommand("loadDriverFeet()")
+	-- Plugin.addToMenu('Vehicle Ergonomics', command2)
+	
+	-- command2:setMenuText("Load Driver Feet Attachment Points")
+	-- command2:setHelpText("Load Driver Feet Attachment Points")
+	-- command2:setIcon("driverFeet.png")
+	-- command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	-- command2:setToolTipText("Load Driver Feet Attachment Points")
+	-- command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	-- command2:setHotkeyName("Load Driver Feet Attachment Points") -- Name of hotkey combination in preferences -> hotkeys dialog
+	-- Plugin.addToToolbar("Vehicle Ergonomics", command2)
+
+end
+
+function loadHpointEquivalent()
+	Ips.loadScene(scriptPath.."/SAE_hPointEquivalent.ips")
+end
+
+-- function loadDriverFeet()
+	-- Ips.loadScene(scriptPath.."/DriverFeet.ips")
+-- end
