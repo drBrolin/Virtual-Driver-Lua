@@ -1,0 +1,136 @@
+dofile(scriptPath.."/jointAngleTranslation.lua");
+dofile(scriptPath.."/../helpFunctions.lua"); --Handles functions for input
+
+function initPlugin()
+	-- --Select manikin family
+	-- command1 = Plugin.createCommand("selectManikinFunction()")
+	-- Plugin.addToMenu('Vehicle Ergonomics', command1)
+	
+	-- command1:setMenuText("Select manikin family")
+	-- command1:setHelpText("Select manikin family.")
+	-- command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	-- command1:setToolTipText("Select manikin family.")
+	-- command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	-- command1:setHotkeyName("Select manikin family") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Pelvis angle
+	command1 = Plugin.createCommand("getPelvisAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command1)
+	
+	command1:setMenuText("Get pelvis angle")
+	command1:setHelpText("Get pelvis angle of the manikin.")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Get pelvis angle of the manikin defined between pelvis and vertical.")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("Driver angles.Get pelvis angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Torso angle
+	command2 = Plugin.createCommand("getTorsoAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command2)
+	
+	command2:setMenuText("Get torso angle")
+	command2:setHelpText("Get torso angle of the manikin.")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Get torso angle of the manikin defined between torso line and vertical.")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Driver angles.Get torso angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Hip angle
+	command3 = Plugin.createCommand("getHipAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command3)
+	
+	command3:setMenuText("Get hip angle")
+	command3:setHelpText("Get hip angle of the manikin.")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Get hip angle of the manikin, two variants.")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("Driver angles.Get hip angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Knee angles
+	command4 = Plugin.createCommand("getKneeAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command4)
+	
+	command4:setMenuText("Get knee angle")
+	command4:setHelpText("Get knee angle of the manikin.")
+	command4:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command4:setToolTipText("Get knee angle of the manikin.")
+	command4:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command4:setHotkeyName("Driver angles.Get knee ") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--Neck angle (example)
+	command5 = Plugin.createCommand("getNeckAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command5)
+	
+	command5:setMenuText("Get neck angle")
+	command5:setHelpText("Get neck angle of the manikin.")
+	command5:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command5:setToolTipText("Get neck angle of the manikin defined between T1T2 to AtlantoAxial.")
+	command5:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command5:setHotkeyName("Driver angles.Get neck angle") -- Name of hotkey combination in preferences -> hotkeys dialog
+	
+	--All angles
+	command6 = Plugin.createCommand("getAllAngleFunction()")
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command6)
+	
+	command6:setMenuText("Get all driver angles")
+	command6:setHelpText("Get all driver angles of the manikin.")
+	command6:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command6:setToolTipText("Get all driver angles of the manikin.")
+	command6:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command6:setHotkeyName("Driver angles.Get all driver angles") -- Name of hotkey combination in preferences -> hotkeys dialog
+end
+
+function getPelvisAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+	pelvisAngle = getPelvisAngle(fam,0); -- Manikin family, Manikin nr
+end
+
+function getTorsoAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	torsoAngle = getTorsoAngle(fam,0);
+end
+
+function getHipAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	hipAngle1 = getHipAngle(fam,0); -- Two definitions.
+end
+
+function getKneeAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+	
+	kneeAngle = getKneeAngle(fam,0); -- Right and left?
+end
+
+function getNeckAngleFunction(fam,iMani) -- T1T2 to AtlantoAxial (C7T1 to Tragion in Reed)
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+	
+	neckAngle = getNeckAngle(fam,0); 
+end
+
+function getAllAngleFunction()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily(); --VDE_DataHandler.lua
+
+	if not(fam == nil) then
+		pelvisAngle = getPelvisAngle(fam,0); -- Manikin family, Manikin nr
+		torsoAngle = getTorsoAngle(fam,0);
+		hipAngle1 = getHipAngle(fam,0); -- Two definitions.
+		kneeAngle = getKneeAngle(fam,0); -- Right and left?
+		neckAngle = getNeckAngle(fam,0); -- Right and left?
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end

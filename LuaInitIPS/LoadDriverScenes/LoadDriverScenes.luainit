@@ -1,0 +1,31 @@
+function initPlugin()
+	--Load H-point template
+	command2 = Plugin.createCommand("loadHpointTemplate()")
+	Plugin.addToMenu('Vehicle Ergonomics', command2)
+	
+	command2:setMenuText("Load H-point template") -- Should we use template or equivalent?
+	command2:setHelpText("Load H-point template")
+	command2:setIcon("hpoint_template.png")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Load H-point template")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Load H-point template") -- Name of hotkey combination in preferences -> hotkeys dialog
+	Plugin.addToToolbar("Vehicle Ergonomics", command2)
+end
+
+function loadHpointTemplate()
+	local root = Ips.getActiveObjectsRoot();
+	local belowRoot = root:getNextSibling();
+	local obj = root;
+	saeFound = nil;
+	while (not(obj == nil) and not(obj:equals(belowRoot))) do
+		if (obj:getPublicAttributeValue("hPointTemplate") == "True") then
+			Ips.alert("hPointTemplate found, no need to create another one.");
+			saeFound = 1;
+		end
+		obj = obj:getObjectBelow();
+	end
+	if saeFound == nil then -- Need to create the grip first
+		Ips.loadScene(scriptPath.."/hPointTemplate.ips")
+	end
+end

@@ -1,0 +1,17 @@
+--An instance of this file has to exist in the Lua Init directory
+--This directory is found by navigating to "Edit->Preferences->Scripting"
+function initPlugin()
+	Plugin.addPluginFolder(scriptPath.."/DriverSimulationSetup")
+	--Plugin.addPluginFolder(scriptPath.."/Optimization") -- Not updated, Replaced by Driver position and evaluation
+	Plugin.addPluginFolder(scriptPath.."/DriverPositionAndEvaluation")
+	Plugin.addPluginFolder(scriptPath.."/DriverAngles")
+	--Plugin.addPluginFolder(scriptPath.."/StatModel") -- Not updated
+	Plugin.addPluginFolder(scriptPath.."/VisionAnalysis") -- Vision analysis. Area and display visibility
+	Plugin.addPluginFolder(scriptPath.."/ReachAnalysis") -- Vision analysis. Area and display visibility
+	Plugin.addPluginFolder(scriptPath.."/LoadDriverScenes")
+
+	-- Extraction of comfort angles
+	-- Import SAE geometry
+	-- Import Default driver geometry for simulation setup
+	-- Roominess checks
+end
