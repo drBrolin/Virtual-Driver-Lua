@@ -186,7 +186,6 @@ function generateSeatHpointTemplate(attachmentsP, seatPosition, buttockAngle, to
 end
 
 function generateFloor(simController, attachmentsP, xBOF, seatY, zAHP, feetBOFAngle)
-
 	-- Position
 
 	-- Pedals
@@ -278,6 +277,7 @@ function positionSW(activeObject_SW, swPositionX, swPositionY, swPositionZ)
 
 	posObj_SW:setTControl(trans);
 end
+
 function positionSeat(activeObject_HpointTemplate, seatPositionX, seatPositionY, seatPositionZ)
 	-- Seat H-point template
 	local posObj_Seat = activeObject_HpointTemplate:toPositionedTreeObject();

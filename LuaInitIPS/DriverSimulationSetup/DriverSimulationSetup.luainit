@@ -119,7 +119,7 @@ end
 
 function geoPointPrediction()
 	--Load files
-	dofile(scriptPath.."/InputData.lua"); --Handles functions for input
+	dofile(scriptPath.."/geoPointPrediction.lua"); --Handles functions for input
 	
 	family = selectManikinFamily();
 	getAllGeomPoints(family);

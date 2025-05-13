@@ -1,7 +1,6 @@
 dofile(scriptPath.."/../helpFunctions.lua"); --Handles functions for input
 
 function initPlugin()
-
 	--Create scene
 	command1 = Plugin.createCommand("createDriverScene()")
 	Plugin.addToMenu('Vehicle Ergonomics.Posture Position from File', command1)
@@ -28,12 +27,12 @@ function initPlugin()
 	command3 = Plugin.createCommand("evaluateDriverPositions()")
 	Plugin.addToMenu('Vehicle Ergonomics.Posture Position from File', command3)
 	
-	command3:setMenuText("Evaluate Driver Positions")
+	command3:setMenuText("Evaluate Driver Positions (Single manikin only)")
 	command3:setHelpText("Evaluate driver positions defined in CSV file.")
 	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
 	command3:setToolTipText("Evaluate driver positions defined in CSV file.")
 	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
-	command3:setHotkeyName("Posture Position from File.Evaluate Driver Positions") -- Name of hotkey combination in preferences -> hotkeys dialog
+	command3:setHotkeyName("Posture Position from File.Evaluate Driver Positions (Single manikin only)") -- Name of hotkey combination in preferences -> hotkeys dialog
 	
 end
 
@@ -44,7 +43,7 @@ inputDataFile = scriptPath.."/defaultDriverScene.csv";
 function createDriverScene()
 	--Load files
 	dofile(scriptPath.."/geometryImport.lua");
-	dofile(scriptPath.."/outputDriverPosture.lua");
+	--dofile(scriptPath.."/outputDriverPosture.lua");
 	
 	--local filenameCSV = "defaultDriverScene.csv"; -- Could be changed to: static string Ips.inputOpenFile( string filter, string directory, string title )
 	--local testDatafile = scriptPath.."/"..filenameCSV;
@@ -114,8 +113,8 @@ end
 
 function attachManikinDriver()
 	--Load files
-	dofile(scriptPath.."/geometryImport.lua");
-	dofile(scriptPath.."/outputDriverPosture.lua");
+	--dofile(scriptPath.."/geometryImport.lua");
+	--dofile(scriptPath.."/outputDriverPosture.lua");
 	
 	fam = selectManikinFamily(); --VDE_DataHandler.lua
 	
@@ -143,10 +142,12 @@ function evaluateDriverPositions()
 	oldFile = Ips.inputDropDownList("Test data selection", "Should the previously selected file, be used? \n["..inputDataFile.."]", inputAlternatives);
 	local testDatafile = "";
 	local testStart = 0;
-	if (oldFile == "Yes") then
+	if (oldFile == 0) then
+		print("Use same file for evaluation.");
 		testStart = 1;
 		testDatafile = inputDataFile;
-	elseif (oldFile == "No") then
+	elseif (oldFile == 1) then
+		print("Use new file for evaluation.");
 		testDatafile = Ips.inputOpenFile("*.csv", scriptPath);
 	end
 	
@@ -202,8 +203,8 @@ function evaluateDriverPositions()
 
 	local attachmentsP = TreeObjectVector();
 	attachmentsP = getAttachmentPoints(attachmentsP);
-	activeObject_SW = getPostionObject("VD_SteeringWheel");
-	activeObject_HpointTemplate = getPostionObject("H-point template");
+	activeObject_SW = getPositionObject("VD_SteeringWheel");
+	activeObject_HpointTemplate = getPositionObject("H-point template");
 
 	for i = testStart, testId:size() - 1 do
 		print("testId: "..tostring(testId[i]));
@@ -256,7 +257,7 @@ function getAttachmentPoints(attachmentsP)
 	return attachmentsP;
 end
 
-function getPostionObject(objectName)
+function getPositionObject(objectName)
 	root = Ips.getActiveObjectsRoot();
 	posObject = root:findFirstMatch(objectName);
 	return posObject;

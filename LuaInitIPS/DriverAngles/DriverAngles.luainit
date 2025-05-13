@@ -15,7 +15,7 @@ function initPlugin()
 	
 	--Pelvis angle
 	command1 = Plugin.createCommand("getPelvisAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command1)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command1)
 	
 	command1:setMenuText("Get pelvis angle")
 	command1:setHelpText("Get pelvis angle of the manikin.")
@@ -26,7 +26,7 @@ function initPlugin()
 	
 	--Torso angle
 	command2 = Plugin.createCommand("getTorsoAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command2)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command2)
 	
 	command2:setMenuText("Get torso angle")
 	command2:setHelpText("Get torso angle of the manikin.")
@@ -37,7 +37,7 @@ function initPlugin()
 	
 	--Hip angle
 	command3 = Plugin.createCommand("getHipAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command3)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command3)
 	
 	command3:setMenuText("Get hip angle")
 	command3:setHelpText("Get hip angle of the manikin.")
@@ -48,7 +48,7 @@ function initPlugin()
 	
 	--Knee angles
 	command4 = Plugin.createCommand("getKneeAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command4)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command4)
 	
 	command4:setMenuText("Get knee angle")
 	command4:setHelpText("Get knee angle of the manikin.")
@@ -59,7 +59,7 @@ function initPlugin()
 	
 	--Neck angle (example)
 	command5 = Plugin.createCommand("getNeckAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command5)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command5)
 	
 	command5:setMenuText("Get neck angle")
 	command5:setHelpText("Get neck angle of the manikin.")
@@ -70,7 +70,7 @@ function initPlugin()
 	
 	--All angles
 	command6 = Plugin.createCommand("getAllAngleFunction()")
-	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z]', command6)
+	Plugin.addToMenu('Vehicle Ergonomics.Driver angles [X,Z] (Single manikin only)', command6)
 	
 	command6:setMenuText("Get all driver angles")
 	command6:setHelpText("Get all driver angles of the manikin.")

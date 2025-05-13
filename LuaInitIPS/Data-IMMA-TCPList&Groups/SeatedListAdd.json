@@ -9,37 +9,37 @@
 			[
 				{			
 					"TCPName" : "Right Heel Point",
-					"TransOffset":[0,-170,0],
+					"TransOffset":[-60,-170,0],
 					"PassByFixateTran": true,
 					"PassByFixateRot": true,
 					"Support" : true,
-					"Range": {"x" : 1.7976931348623157e+308 , "y" : 1.7976931348623157e+308 ,"z" : 0, "rx" : 1.7976931348623157e+308, "ry" : 1.7976931348623157e+308, "rz" : 1.7976931348623157e+308}
+					"Range": {"x" : 0.2 , "y" : 0.1 ,"z" : 0, "rx" : 1.7976931348623157e+308, "ry" : 1.7976931348623157e+308, "rz" : 1.7976931348623157e+308}
 				},
 				{					
 					"TCPName" : "Right Ball of Foot",
 					"PassByRange": ["x","y"],
-					"TransOffset":[60,-170,110],
+					"TransOffset":[0,-170,110],
 					"PassByFixateTran": true,
 					"PassByFixateRot": false,
 					"Support" : false,
-					"Range": {"x" : 0.1 , "y" : 0.05 ,"z" : 0, "rx" : 45, "ry" : 1.7976931348623157e+308, "rz" : 45}
+					"Range": {"x" : 0.1 , "y" : 0.05 ,"z" : 0, "rx" : 45, "ry" : 15, "rz" : 45}
 				},
 				{
 					"TCPName" : "Left Heel Point",
-					"TransOffset":[0,170,0],
+					"TransOffset":[-60,170,0],
 					"PassByFixateTran": true,
 					"PassByFixateRot": true,
 					"Support" : true,
-					"Range": {"x" : 1.7976931348623157e+308 , "y" : 1.7976931348623157e+308 ,"z" : 0, "rx" : 1.7976931348623157e+308, "ry" : 1.7976931348623157e+308, "rz" : 1.7976931348623157e+308}
+					"Range": {"x" : 0.2 , "y" : 0.1 ,"z" : 0, "rx" : 1.7976931348623157e+308, "ry" : 1.7976931348623157e+308, "rz" : 1.7976931348623157e+308}
 				},
 				{					
 					"TCPName" : "Left Ball of Foot",
 					"PassByRange": ["x","y"],
-					"TransOffset":[60,170,110],
+					"TransOffset":[0,170,110],
 					"PassByFixateTran": true,
 					"PassByFixateRot": false,
 					"Support" : false,
-					"Range": {"x" : 0.1 , "y" : 0.05 ,"z" : 0, "rx" : 45, "ry" : 1.7976931348623157e+308, "rz" : 45}
+					"Range": {"x" : 0.1 , "y" : 0.05 ,"z" : 0, "rx" : 45, "ry" : 15, "rz" : 45}
 				}
 			]
 		},

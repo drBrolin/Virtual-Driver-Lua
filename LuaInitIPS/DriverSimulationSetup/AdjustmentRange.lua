@@ -148,30 +148,31 @@ function setSWrange(quadPoints) -- Search if the specific grip exist, if not the
 	end
 	if gripFound == nil then -- Need to create the grip first
 		rSwGP = simController:createGripPoint(); -- Right Steering Wheel Grip Point
-		rSwGP:setGripConfiguration("Diagonal Power Grip");
+		-- rSwGP:setGripConfiguration("Diagonal Power Grip"); Can´t be used due to rotational offset
 		--rSwGP:setHand(1);
-		rSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
 		rSwGPVis = rSwGP:getVisualization();
-		rSwGPVis:setLabel("DPP_rSWGrip");	
-		trans = rSwGPVis:getTWorld();
+		rSwGPVis:setLabel("DPP_rSWGrip");
+		rSwGP:setGripClosure(0.55);		
+		rSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
+		rSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
+		trans = rSwGPVis:getTControl();
 		trans["tx"] = attachMidPoint[1];
 		trans["ty"] = attachMidPoint[2];
-		trans["tz"] = attachMidPoint[3]-0.07;
-		
-		-- set(trans, 'R.r1', Vector3d(-math.cos(math.rad(yAngle)), 0, -math.sin(math.rad(yAngle))));
-		-- set(trans, 'R.r2', Vector3d(0, -1, 0));
-		-- set(trans, 'R.r3', Vector3d(-math.sin(math.rad(yAngle)), 0, math.cos(math.rad(yAngle))));
-		rSwGPVis:setTWorld(trans);
-
-		rotateActiveObjectOnOneAxis(rSwGPVis, true, true, true, -180, yAngle, 0); -- Right grip  --- ROTATEFIX	
-
-		rSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
+		trans["tz"] = attachMidPoint[3];
+		-- Rotate the right grip Steering wheel angle + 180 degrees.
+		set(trans, 'R.r1', Vector3d(math.cos(math.rad(yAngle)), 0, math.sin(math.rad(yAngle))));
+		set(trans, 'R.r2', Vector3d(0, -1, 0));
+		set(trans, 'R.r3', Vector3d(math.sin(math.rad(yAngle)), 0, -math.cos(math.rad(yAngle))));
+		rSwGPVis:setTControl(trans);
 	else
-		trans = gripVis:getTWorld();
+		trans = gripVis:getTControl();
 		trans["tx"] = attachMidPoint[1];
-		trans["tz"] = attachMidPoint[3]-0.07;
-		gripVis:setTWorld(trans);
-		rotateActiveObjectOnOneAxis(gripVis, true, true, true, -180, yAngle, 0); --- ROTATEFIX
+		trans["tz"] = attachMidPoint[3];
+		-- Rotate the right grip Steering wheel angle + 180 degrees.
+		set(trans, 'R.r1', Vector3d(math.cos(math.rad(yAngle)), 0, math.sin(math.rad(yAngle))));
+		set(trans, 'R.r2', Vector3d(0, -1, 0));
+		set(trans, 'R.r3', Vector3d(math.sin(math.rad(yAngle)), 0, -math.cos(math.rad(yAngle))));
+		gripVis:setTControl(trans);
 		rSwGP = gripVis:getGripPoint();
 		rSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
 	end
@@ -192,24 +193,32 @@ function setSWrange(quadPoints) -- Search if the specific grip exist, if not the
 	end
 	if gripFound == nil then -- Need to create the grip first
 		lSwGP = simController:createGripPoint(); -- Left Steering Wheel Grip Point
-		lSwGP:setGripConfiguration("Diagonal Power Grip");
+		-- lSwGP:setGripConfiguration("Diagonal Power Grip"); Can´t be used due to rotational offset
 		lSwGP:setHand(0);
-		lSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
 		lSwGPVis = lSwGP:getVisualization();
 		lSwGPVis:setLabel("DPP_lSWGrip");
-		trans = lSwGPVis:getTWorld();
+		lSwGP:setGripClosure(0.55);	
+		lSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
+		lSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
+		trans = lSwGPVis:getTControl();
 		trans["tx"] = attachMidPoint[1];
 		trans["ty"] = attachMidPoint[2];
-		trans["tz"] = attachMidPoint[3]-0.07;
-		lSwGPVis:setTWorld(trans);
-		rotateActiveObjectOnOneAxis(lSwGPVis, true, true, true, -180, yAngle, -180); -- Left grip  --- ROTATEFIX
-		lSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
+		trans["tz"] = attachMidPoint[3];
+		-- Rotate the left grip Steering wheel angle.
+		set(trans, 'R.r1', Vector3d(-math.cos(math.rad(yAngle)), 0, math.sin(math.rad(yAngle))));
+		set(trans, 'R.r2', Vector3d(0, 1, 0));
+		set(trans, 'R.r3', Vector3d(-math.sin(math.rad(yAngle)), 0, -math.cos(math.rad(yAngle))));
+		lSwGPVis:setTControl(trans);		
 	else
-		trans = gripVis:getTWorld();
+		trans = gripVis:getTControl();
 		trans["tx"] = attachMidPoint[1];
-		trans["tz"] = attachMidPoint[3]-0.07;
-		gripVis:setTWorld(trans);
-		rotateActiveObjectOnOneAxis(gripVis, true, true, true, -180, yAngle, -180);  --- ROTATEFIX
+		trans["tz"] = attachMidPoint[3];
+		-- Rotate the left grip Steering wheel angle.
+		set(trans, 'R.r1', Vector3d(-math.cos(math.rad(yAngle)), 0, math.sin(math.rad(yAngle))));
+		set(trans, 'R.r2', Vector3d(0, 1, 0));
+		set(trans, 'R.r3', Vector3d(-math.sin(math.rad(yAngle)), 0, -math.cos(math.rad(yAngle))));
+		gripVis:setTControl(trans);
+		--rotateActiveObjectOnOneAxis(gripVis, true, true, true, -180, yAngle, -180);  --- ROTATEFIX
 		lSwGP = gripVis:getGripPoint();
 		lSwGP:setSymmetricTranslationTolerances(heightAR/2,0,lengthAR/2);
 	end
@@ -224,15 +233,17 @@ function getGeoSize()
 	--filenameWRL = "Data/IMMA/VDtemp/objAdjRange.wrl"; -- Specific VDtemp folder that needs to be writeable!
 	if (objSelected) then
 		local geoBoundingBox = objSelected:getBoundingBox();
+		local transSelected = objSelected:getTControl();
+				
 		--5- get length, width, height, 
 		-- local length = swBoundingBox.xmax-swBoundingBox.xmin
 		local geoWidth = geoBoundingBox.ymax-geoBoundingBox.ymin;
-		local yMidPoint = (geoBoundingBox.ymax+geoBoundingBox.ymin)/2
-		local xMidPoint = (geoBoundingBox.xmax+geoBoundingBox.xmin)/2
-		local zMidPoint = (geoBoundingBox.zmax+geoBoundingBox.zmin)/2
+		local yMidPoint = (geoBoundingBox.ymax+geoBoundingBox.ymin)/2;
+		local xMidPoint = (geoBoundingBox.xmax+geoBoundingBox.xmin)/2;
+		local zMidPoint = (geoBoundingBox.zmax+geoBoundingBox.zmin)/2;
 		print("Geometry width: "..tostring(geoWidth)); 
-		print("Y mid point: "..tostring(yMidPoint)); 
-		print("Width: "..tostring(yMidPoint + geoWidth/2-(swThickness/1000)/2));
+		print("Y mid point: "..tostring(yMidPoint)); 		
+		
 		root = Ips.getActiveObjectsRoot();
 		--We will just name the root as object, since we will iterate through objects
 		obj = root;
@@ -251,20 +262,25 @@ function getGeoSize()
 		end
 		if gripFound == nil then -- Need to create the grip first
 			rSwGP = simController:createGripPoint(); -- Right Steering Wheel Grip Point
-			rSwGP:setGripConfiguration("Diagonal Power Grip");
+			--rSwGP:setGripConfiguration("Diagonal Power Grip"); Can´t be used due to rotational offset
 			--rSwGP:setHand(1);
-			rSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
 			rSwGPVis = rSwGP:getVisualization();
-			rSwGPVis:setLabel("DPP_rSWGrip");	
-			trans = rSwGPVis:getTWorld();
+			rSwGPVis:setLabel("DPP_rSWGrip");
+			rSwGP:setGripClosure(0.55);
+			rSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
+			trans = rSwGPVis:getTControl();
 			trans["tx"] = xMidPoint;
-			trans["ty"] = yMidPoint + geoWidth/2 - (swThickness/1000)/2+0.03;
-			trans["tz"] = zMidPoint-0.07;
-			rSwGPVis:setTWorld(trans);
+			trans["ty"] = yMidPoint + geoWidth/2 - (swThickness/1000)/2;
+			trans["tz"] = zMidPoint;
+			-- Rotate the right grip Steering wheel angle + 180 degrees.
+			set(trans, 'R.r1', Vector3d(get(transSelected, 'R.r1.x'), 0, -1*get(transSelected, 'R.r1.z')));
+			set(trans, 'R.r2', Vector3d(0, -1, 0));
+			set(trans, 'R.r3', Vector3d(get(transSelected, 'R.r3.x'), 0, -1*get(transSelected, 'R.r3.z')));
+			rSwGPVis:setTControl(trans);
 		else
-			trans = gripVis:getTWorld();
-			trans["ty"] = yMidPoint + geoWidth/2 - (swThickness/1000)/2+0.03;
-			gripVis:setTWorld(trans);
+			trans = gripVis:getTControl();
+			trans["ty"] = yMidPoint + geoWidth/2 - (swThickness/1000)/2;
+			gripVis:setTControl(trans);
 		end
 				
 		--We will just name the root as object, since we will iterate through objects
@@ -283,20 +299,25 @@ function getGeoSize()
 		end
 		if gripFound == nil then -- Need to create the grip first
 			lSwGP = simController:createGripPoint(); -- Left Steering Wheel Grip Point
-			lSwGP:setGripConfiguration("Diagonal Power Grip");
+			--lSwGP:setGripConfiguration("Diagonal Power Grip"); Can´t be used due to rotational offset
 			lSwGP:setHand(0);
-			lSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
 			lSwGPVis = lSwGP:getVisualization();
 			lSwGPVis:setLabel("DPP_lSWGrip");
-			trans = lSwGPVis:getTWorld();
+			lSwGP:setGripClosure(0.55);
+			lSwGP:setSymmetricRotationTolerances(0.785398163,0.785398163,0.785398163);
+			trans = lSwGPVis:getTControl();
 			trans["tx"] = xMidPoint;
-			trans["ty"] = yMidPoint - geoWidth/2 + (swThickness/1000)/2-0.03;
-			trans["tz"] = zMidPoint-0.07;
-			lSwGPVis:setTWorld(trans);
+			trans["ty"] = yMidPoint - geoWidth/2 + (swThickness/1000)/2;
+			trans["tz"] = zMidPoint;
+			-- Rotate the left grip Steering wheel angle.
+			set(trans, 'R.r1', Vector3d(-1*get(transSelected, 'R.r1.x'), 0, -1*get(transSelected, 'R.r1.z')));
+			set(trans, 'R.r2', Vector3d(0, 1, 0));
+			set(trans, 'R.r3', Vector3d(-1*get(transSelected, 'R.r3.x'), 0, -1*get(transSelected, 'R.r3.z')));		
+			lSwGPVis:setTControl(trans);
 		else
-			trans = gripVis:getTWorld();
-			trans["ty"] = yMidPoint - geoWidth/2 + (swThickness/1000)/2-0.03;
-			gripVis:setTWorld(trans);
+			trans = gripVis:getTControl();
+			trans["ty"] = yMidPoint - geoWidth/2 + (swThickness/1000)/2;
+			gripVis:setTControl(trans);
 		end
 	else
 		Ips.alert("No geometry selected"); -- Error message and break script

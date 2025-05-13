@@ -1,0 +1,106 @@
+{
+"TCPs" :
+	[
+		{
+			"TCPName" : "MidEye",
+			"MasterJoint" : "Eyeside",
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "UpperNeck",
+			"MasterJoint" : "AtlantoAxial",
+			"MeshOffset" : [0 , 0 , 0],
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "T12L1 surface",
+			"MasterJoint" : "T12L1",
+			"MeshOffset" : [-1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,2000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "T6T7 surface",
+			"MasterJoint" : "T6T7",
+			"MeshOffset" : [-1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,2000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "Lower Back surface",
+			"MasterJoint" : "L5S1",
+			"MeshOffset" : [-1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,4000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "Buttock bottom",
+			"MasterJoint" : "LeftHip",
+			"AverageOffset" : ["RightHip","LeftHip"],
+			"MeshOffset" : [1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,4000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "LeftHipSurface",
+			"MasterJoint" : "LeftHip",
+			"MeshOffset" : [1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,4000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "RightHipSurface",
+			"MasterJoint" : "RightHip",
+			"MeshOffset" : [1.0 , 0.0 ,0.0],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,4000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "Thigh bottom",
+			"MasterJoint" : "RightHip",
+			"AverageOffset" : ["RightHip","LeftHip"],
+			"MeshOffset" : [1 , 0 , 2],
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "Right knee crease",
+			"MasterJoint" : "RightKnee",
+			"MeshOffset" : [1.0 , 0.0 ,0.0],
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "Left knee crease",
+			"MasterJoint" : "LeftKnee",
+			"MeshOffset" : [1.0 , 0.0 ,0.0],
+			"SystemUse" : "VDE"
+		},
+		{
+			"TCPName" : "HipJointCentre",
+			"MasterJoint" : "Rotation",
+			"AverageOffset" : ["RightHip","LeftHip"],
+			"DefaultMinForce" : [-10,-10,-10],
+			"DefaultMaxForce" : [10,10,4000],
+			"DefaultFriction" : 0.8,
+			"DefaultSupport" : true,
+			"SystemUse" : "VDE"
+		}
+	]
+}
