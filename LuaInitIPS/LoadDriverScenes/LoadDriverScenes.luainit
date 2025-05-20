@@ -20,7 +20,7 @@ function loadHpointTemplate()
 	saeFound = nil;
 	while (not(obj == nil) and not(obj:equals(belowRoot))) do
 		if (obj:getPublicAttributeValue("hPointTemplate") == "True") then
-			Ips.alert("hPointTemplate found, no need to create another one.");
+			Ips.alert("H-point Template found, no need to create another one.");
 			saeFound = 1;
 		end
 		obj = obj:getObjectBelow();

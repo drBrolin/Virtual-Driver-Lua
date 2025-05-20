@@ -18,6 +18,6 @@ function VisionObstructionAnalysis()
 	
 	fam = selectManikinFamily();
 	-- Get manikins
-	Ips.alert("To get a succesful result a rectangular surface should be selected and collision avoidance on where obstacles should be set to rigid bodies in front of rectangle.")
+	Ips.alert("To get a successful result a rectangular surface should be selected and collision avoidance on where obstacles should be set to rigid bodies in front of rectangle.")
 	visionObstructionFunction(fam); -- Manikin family
 end

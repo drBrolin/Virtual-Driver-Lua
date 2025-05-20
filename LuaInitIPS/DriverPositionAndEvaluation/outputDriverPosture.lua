@@ -2,6 +2,8 @@ function math.sign(x)
   return x>0 and 1 or x<0 and -1 or 0
 end
 
+--- Functions below can and should be updated based on definitions that will be added in upcoming revisions.
+
 function getDriverHiptoEyeAngleFunction(fam,iMani) -- Right/LeftHip to Eyeside (mid-hip to center eye in Reed)
 	local RightHipTrans = fam:getJointTransformationForManikin(iMani,"RightHip");
 	local LeftHipTrans = fam:getJointTransformationForManikin(iMani,"LeftHip");
