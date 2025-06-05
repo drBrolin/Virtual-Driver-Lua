@@ -137,12 +137,19 @@ function visionObstructionFunction(fam)
 	-- Get rotation matrix:
 	local axis = {rotationObj[1], rotationObj[2], rotationObj[3]}; -- Rotate around the X-axis
 	local angle = rotationObj[4];
-	local rotationMatrix = axisAngleToMatrix(axis, angle);
-	-- -- Print the result
-	-- for i = 1, 3 do
-		-- print(string.format("%f %f %f", rotationMatrix[i][1], rotationMatrix[i][2], rotationMatrix[i][3]))
-	-- end
-
+	-- Rotation matrix as identity matrix to not get errors if not rotated.
+	local rotationMatrix = {
+		{1,0,0;},
+		{0,1,0;},
+		{0,0,1;}
+	}
+	-- print("Axis: "..tostring(axis[1])..", "..tostring(axis[2])..", "..tostring(axis[3])..". ");
+	-- print("Angle: "..tostring(angle));
+	if not(axis[1] == 0  and axis[2] == 0 and axis[3] == 0 and angle == 0)  then
+		rotationMatrix = axisAngleToMatrix(axis, angle);
+		--print("Rotation matrix calculation");
+	end
+	
 	-- Get number of points
 	tSize = table.getn(objPoints);
 	-- print("tSize: "..tostring(tSize));
@@ -205,6 +212,7 @@ function visionObstructionFunction(fam)
 	for i = 0,numberOfPoints-1 do
 		point = {allpoints[i][0],allpoints[i][1],allpoints[i][2]};
 		rotatedPoint = rotatePoint(rotationMatrix, point);
+		--print("rotatedPoint "..tostring(i)..": "..tostring(rotatedPoint[1])..", "..tostring(rotatedPoint[2])..", "..tostring(rotatedPoint[3])..". ");
 		rotatedPoints[i] = Vector3d(rotatedPoint[1],rotatedPoint[2],rotatedPoint[3]);
 		--print("rotatedPoint "..tostring(i)..": "..tostring(rotatedPoints[i][0])..", "..tostring(rotatedPoints[i][1])..", "..tostring(rotatedPoints[i][2])..". ");
 	end
@@ -233,6 +241,8 @@ function visionObstructionFunction(fam)
 	testedPoints = 0;
 	visiblePoints = 0;
 	
+	transDisc = transSelObject;
+	
 	-- TODO: Create a CSV file to write to.
 	-- Write first row with "Pnr" and then all manikin´s labels.
 	for i = 0,numberOfPoints-1 do 	
@@ -248,7 +258,7 @@ function visionObstructionFunction(fam)
 		transViewPoint["tz"] = point[2];
 		viewPoint:setTarget(transViewPoint);
 		
-		Ips.updateScreen();	
+		--Ips.updateScreen();	
 		-- For each point check if if line of sight is blocked for the specified member of the specified family	
 		local blockedFor = 0;
 		for j = 0, mannames:size() - 1 do
@@ -256,7 +266,7 @@ function visionObstructionFunction(fam)
 			if blockedView then
 				blockedFor = blockedFor + 1;
 				-- TODO: Write "Blocked" or 0 for specific manikin "..mannames[j])".
-			else
+			-- else
 				-- TODO: Write "Visible" or 1 for specific manikin "..mannames[j])".
 			end
 		end
@@ -276,7 +286,7 @@ function visionObstructionFunction(fam)
 		-- Connect percVision to colour of point
 		-- visionPointCloudfile:write(""..tostring(point[0]).." "..tostring(point[1]).." "..tostring(point[2]).." "..tostring(rCol).." "..tostring(gCol).." 0\n");
 		disc = PrimitiveShape.createDisc(0,resDist/2,10,10); -- creates the disc
-		transDisc = transSelObject;
+	
 		transDisc["tx"] = transViewPoint["tx"];
 		transDisc["ty"] = transViewPoint["ty"];
 		transDisc["tz"] = transViewPoint["tz"];
@@ -292,6 +302,7 @@ function visionObstructionFunction(fam)
 		-- TODO: Add new row.
 		
 		testedPoints = testedPoints + 1;
+		print("Tested point: "..tostring(testedPoints));
 	end	
 	print("Tested points: "..tostring(testedPoints)..", Visible points: "..tostring(visiblePoints)..", Percent visible: "..tostring(visiblePoints/testedPoints*100)); -- naming the sphere
 
