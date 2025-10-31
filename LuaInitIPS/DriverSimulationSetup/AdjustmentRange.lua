@@ -4,7 +4,7 @@ function getAdjRange(adjType)
 	-- *** DEFINE ADJUSTMENT RANGE ***
 	-- *** Click on surface > get vertex/point coordinates ***
 	objAdjRange = Ips.getGeometrySelection();
-	filenameWRL = "tempObjAdjRange.wrl"; -- Exports a temporary VRML/WRL file to read vertex points from.
+	filenameWRL = scriptPath.."/tempObjAdjRange.wrl"; -- Exports a temporary VRML/WRL file to read vertex points from.
 	--filenameWRL = "Data/IMMA/VDtemp/objAdjRange.wrl"; -- Specific VDtemp folder that needs to be writeable!
 	if (objAdjRange) then
 		objAdjRange:exportToVRML(filenameWRL);
@@ -96,9 +96,9 @@ function getAdjRange(adjType)
 		print("MidPoint: X."..tostring(midPointAdjRange[1])..", Y."..tostring(midPointAdjRange[2])..", Z."..tostring(midPointAdjRange[3]));
 		
 		if (adjType == "SW") then
-			print("Steering wheel adjustment range is recorded and control frames generated");
+			print("Steering wheel adjustment range is recorded and corner points saved for furher use.");
 		else
-			print("Seat adjustment range is recorded and control frames generated");
+			print("Seat adjustment range is recorded and corner points saved for furher use.");
 		end
 		print("QUAD POINTS")
 		print(quadPoints[1][1])--point1 X
