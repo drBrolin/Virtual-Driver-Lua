@@ -33,10 +33,10 @@ function getReachGrip()
 		gripLabels:push_back(nameGrip);
 	end
 	selectedReachGrip = reachGrips[0];
-	if (reachGrips:size() == 1) then -- Checks if a selection of manikin family is needed.
+	if (reachGrips:size() == 1) then -- Checks if a selection of grip is needed.
 		selectedReachGrip = reachGrips[0];
 	elseif (reachGrips:size() == 0) then
-		Ips.alert("No manikin families exist in tree!");
+		Ips.alert("No grips exist in tree!");
 		return; -- How is this inserted?
 	else
 		gripSelection = Ips.inputDropDownList("Grip selection", "Select which reach grip that should be used in analysis.", gripLabels);
@@ -118,7 +118,6 @@ function ReachFrameAnalysis(fam)
 		end
 	end
 	
-
 	transHand = handPoint:getTarget(); -- gets the coordinates of the hand grip
 	transGripOrigin = transHand; -- Saving the original position to reset it to after the simulation.
 	
@@ -126,7 +125,10 @@ function ReachFrameAnalysis(fam)
 	reachPoints = getReachPoints(reachPoints);
 	print("Selected frames: "..tostring(reachPoints:size()));
 	
-	okDiff = 0.04; -- 40 mm diff is ok.	
+	local gripOffset = reachGripPoint:getOffset();
+	okDiff = math.sqrt((gripOffset[0]-0)^2+(gripOffset[1]-0)^2+(gripOffset[2]-0.07)^2)+0.02;
+	--okDiff = 0.04; -- 40 mm diff is ok.	
+	print("OK diff: " ..tostring(okDiff));
 	testedPoints = 0;
 	reachedPoints = 0;
 	
@@ -155,11 +157,12 @@ function ReachFrameAnalysis(fam)
 			end
 			transHand = handPoint:getTarget(); -- gets the coordinates of the hand grip
 
-			xDiff = math.abs(transHand["tx"]-transGrip["tx"]);
-			yDiff = math.abs(transHand["ty"]-transGrip["ty"]);
-			zDiff = math.abs(transHand["tz"]-transGrip["tz"]);
+			xDiff = transHand["tx"]-transGrip["tx"];
+			yDiff = transHand["ty"]-transGrip["ty"];
+			zDiff = transHand["tz"]-transGrip["tz"];
+			testDiff = math.sqrt(xDiff^2+yDiff^2+zDiff^2);
 			
-			if xDiff < okDiff and yDiff < okDiff and zDiff < okDiff then
+			if testDiff < okDiff then
 				print("Point " ..tostring(i+1).. " reached by "..mannames[j]);
 			else
 				notReachedBy = notReachedBy + 1;
@@ -255,7 +258,10 @@ function ReachFrameNr(fam)
 		reachPointNr = reachPointSelection;
 	end
 	
-	okDiff = 0.04; -- 40 mm diff is ok.	
+	local gripOffset = reachGripPoint:getOffset();
+	okDiff = math.sqrt((gripOffset[0]-0)^2+(gripOffset[1]-0)^2+(gripOffset[2]-0.07)^2)+0.02;
+	--okDiff = 0.04; -- 40 mm diff is ok.	
+	print("OK diff: " ..tostring(okDiff));
 	testedPoints = 0;
 	reachedPoints = 0;
 	
@@ -276,15 +282,17 @@ function ReachFrameNr(fam)
 		end
 		transHand = handPoint:getTarget(); -- gets the coordinates of the hand grip
 		--print("transHand: x: "..tostring(transHand["tx"])..", y: "..tostring(transHand["ty"])..", z:"..tostring(transHand["tz"])..".");
-		xDiff = math.abs(transHand["tx"]-transGrip["tx"]);
-		yDiff = math.abs(transHand["ty"]-transGrip["ty"]);
-		zDiff = math.abs(transHand["tz"]-transGrip["tz"]);
-		
-		if xDiff < okDiff and yDiff < okDiff and zDiff < okDiff then
-			print("Point " ..tostring(reachPointNr+1).. " reached by "..mannames[j]..". xDiff: "..tostring(xDiff)..", yDiff: "..tostring(yDiff)..", zDiff:"..tostring(zDiff)..".");
+			
+		xDiff = transHand["tx"]-transGrip["tx"];
+		yDiff = transHand["ty"]-transGrip["ty"];
+		zDiff = transHand["tz"]-transGrip["tz"];
+		testDiff = math.sqrt(xDiff^2+yDiff^2+zDiff^2);
+			
+		if testDiff < okDiff then
+			print("Point " ..tostring(reachPointNr+1).. " reached by "..mannames[j]..". Diff: "..tostring(testDiff)..".");
 		else
 			notReachedBy = notReachedBy + 1;
-			print("Point " ..tostring(reachPointNr+1).. " not reached by "..mannames[j]..". xDiff: "..tostring(xDiff)..", yDiff: "..tostring(yDiff)..", zDiff:"..tostring(zDiff)..".");
+			print("Point " ..tostring(reachPointNr+1).. " not reached by "..mannames[j]..". Diff: "..tostring(testDiff)..".");
 		end
 	end
 	
