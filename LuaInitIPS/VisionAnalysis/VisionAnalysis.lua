@@ -84,7 +84,7 @@ function visionObstructionFunction(fam)
 	-- *** DEFINE OBJECT POSITION, ROTATION AND SIZE ***
 	-- *** Click on surface > get vertex/point coordinates ***
 	objAdjRange = Ips.getGeometrySelection();
-	filenameWRL = "tempObj.wrl"; -- Exports a temporary VRML/WRL file to read vertex points from.
+	filenameWRL = scriptPath.."/tempObj.wrl"; -- Exports a temporary VRML/WRL file to read vertex points from.
 	--filenameWRL = "Data/IMMA/VDtemp/objAdjRange.wrl"; -- Specific VDtemp folder that needs to be writeable!
 	if (objAdjRange) then
 		local positionedTreeObjectOfSelection = objAdjRange:toPositionedTreeObject();
