@@ -1,0 +1,130 @@
+dofile(scriptPath.."/ManikinPosture.lua"); -- File with defined calculations of different body joint angles (see below).
+dofile(scriptPath.."/../helpFunctions.lua"); --Handles functions for input
+
+function initPlugin()
+	--Save start posture
+	command1 = Plugin.createCommand("saveStartPostures()")
+	Plugin.addToMenu('Vehicle Ergonomics.Manikin Posture Assessment', command1)
+	
+	command1:setMenuText("Save neutral reference start posture")
+	command1:setHelpText("Get neutral reference start posture of the manikin (family), saved to a temp file.")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Get neutral reference start posture of the manikin (family), saved to a temp file.")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("Mankin Posture.Save neutral reference start posture") -- Name of hotkey combination in preferences -> hotkeys dialog
+	command1:setIcon("ManikinPostureSave.png")
+	Plugin.addToToolbar("Vehicle Ergonomics", command1)
+	
+	--Reference example
+	command2 = Plugin.createCommand("assessCurrentPosture()")
+	Plugin.addToMenu('Vehicle Ergonomics.Manikin Posture Assessment', command2)
+	
+	command2:setMenuText("Assess current posture")
+	command2:setHelpText("Assess current posture of the manikin (family), saved to a temp file.")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Assess current posture of the manikin (family), saved to a temp file.")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("Mankin Posture.Assess current posture") -- Name of hotkey combination in preferences -> hotkeys dialog
+	command2:setIcon("ManikinPostureAssess.png")
+	Plugin.addToToolbar("Vehicle Ergonomics", command2)
+	
+	--Reference example
+	command3 = Plugin.createCommand("displayBodyAxisSystems()")
+	Plugin.addToMenu('Vehicle Ergonomics.Manikin Posture Assessment', command3)
+	
+	command3:setMenuText("Display Body Axis Systems")
+	command3:setHelpText("Display Body Axis Systems for current posture of the manikin (family)")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Display Body Axis Systems for current posture of the manikin (family)")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("Mankin Posture.Display Body Axis Systems") -- Name of hotkey combination in preferences -> hotkeys dialog
+	command3:setIcon("ManikinPostureAxisSystem.png")
+	Plugin.addToToolbar("Vehicle Ergonomics", command3)
+	
+end
+
+function saveStartPostures()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily();
+	-- TODO: Get the representative or a drop down of manikins
+	Ips.alert("Make sure the manikin (family) is in neutral start posture.\n If not click ok, change posture and run Get neutral posture again.");
+	if not(fam == nil) then
+		-- Sets up a CSV file to write to
+		local famvis = fam:getVisualization();
+		local jointFilenameCSV = scriptPath.."/neutralJointData_"..famvis:getLabel()..".csv";
+		getStartPosture(fam, jointFilenameCSV);	
+		print("Joint data saved to: "..jointFilenameCSV);		
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function assessCurrentPosture()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily();
+	-- TODO: Get the representative or a drop down of manikins
+	--Ips.alert("Make sure the manikin (family) is in neutral start posture.\n If not click ok, change posture and run Get neutral posture again.");
+	if not(fam == nil) then
+		-- Sets up a CSV file to write to
+		local famvis = fam:getVisualization();
+		local jointFilenameCSV = scriptPath.."/currentJointData_"..famvis:getLabel()..".csv";	
+		currentPosture(fam, jointFilenameCSV);	
+		print("Joint data assessed to: "..jointFilenameCSV);		
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+function displayBodyAxisSystems()
+	root = Ips.getActiveObjectsRoot();
+	
+	fam = selectManikinFamily();
+	-- TODO: Get the representative or a drop down of manikins
+	--Ips.alert("Make sure the manikin (family) is in neutral start posture.\n If not click ok, change posture and run Get neutral posture again.");
+	if not(fam == nil) then
+		-- Sets up a CSV file to write to
+		local famvis = fam:getVisualization();
+		displayAxisSystems(fam);	
+	else
+		Ips.alert("You need to select a family first.");
+	end
+end
+
+--Global variables to save user selection
+SelectedFamily = -1;
+
+function selectManikinFamily()
+	local root = Ips.getActiveObjectsRoot();
+	local belowRoot = root:getNextSibling();
+	local obj = root;
+	familyvector = TreeObjectVector();
+	while (not(obj == nil) and not(obj:equals(belowRoot))) do
+		if (obj:isManikinFamilyVisualization()) then
+			familyvector:push_back(obj); -- Push family in to familyvector
+		end
+		obj = obj:getObjectBelow();
+	end
+	
+	familynames = StringVector();
+	for i = 0, familyvector:size() - 1 do
+		namefam = tostring(familyvector[i]:getLabel());
+		familynames:push_back(namefam);
+	end
+	if (familyvector:size() == 1) then -- Checks if a selection of manikin family is needed.
+		famvis = familyvector[0]:toManikinFamilyVisualization();
+	elseif (familyvector:size() == 0) then
+		Ips.alert("No manikin families exist in tree!");
+		return; -- How is this inserted?
+	else
+		familySelection = Ips.inputDropDownList("Family selection", "Select the manikin family", familynames);
+		if (familySelection == -1) then -- Hanterar fel
+			Ips.alert("Error in input!");
+			--return; -- How is this inserted?
+		end
+		famvis = familyvector[familySelection]:toManikinFamilyVisualization();
+	end
+	fam = famvis:getManikinFamily(); -- Get selected family.
+	return fam;
+end
