@@ -195,8 +195,8 @@ function currentPosture(fam, jointFilenameCSV)
 	jointAngleExportfile:write("HeadLateral,");
 	jointAngleExportfile:write("HeadRotation,");
 	jointAngleExportfile:write("UpperArmflexionRT,");
-	jointAngleExportfile:write("UpperArmflexionLT,");
 	jointAngleExportfile:write("UpperArmElevationRT,");
+	jointAngleExportfile:write("UpperArmflexionLT,");
 	jointAngleExportfile:write("UpperArmElevationLT,");
 	jointAngleExportfile:write("HumeralRotationRT,");
 	jointAngleExportfile:write("HumeralRotationLT,");
@@ -496,7 +496,6 @@ function currentPosture(fam, jointFilenameCSV)
 
 	end
 	jointAngleExportfile:close();
-	
 end
 
 function displayAxisSystems(fam)
