@@ -55,8 +55,38 @@ function initPlugin()
 	command4:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
 	command4:setToolTipText("Simulate reach of specific frame.")
 	command4:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
-	command4:setHotkeyName("Reach analysis by frames.Reach specific point/frame") -- Name of hotkey combination in preferences -> hotkeys dialog	
-	
+	command4:setHotkeyName("Reach analysis by frames.Reach specific point/frame") -- Name of hotkey combination in preferences -> hotkeys dialog
+
+	-- -- 6. Generate icosphere reach points:
+	-- command5 = Plugin.createCommand("doCreateIcospherePoints()")
+	-- Plugin.addToMenu('Vehicle Ergonomics.Reach analysis by frames', command5)
+	-- command5:setMenuText("Generate icosphere points")
+	-- command5:setHelpText("Generates uniformly distributed points on a 2 m sphere (icosphere subdivision).")
+	-- command5:setHelpTextInToolbar(true)
+	-- command5:setToolTipText("Generates uniformly distributed points on a 2 m sphere (icosphere subdivision).")
+	-- command5:setToolTipInMenu(true)
+	-- command5:setHotkeyName("Reach analysis by frames.Generate icosphere points")
+
+	-- -- 7. Reach envelope analysis:
+	-- command6 = Plugin.createCommand("doReachEnvelopeAnalysisIco()")
+	-- Plugin.addToMenu('Vehicle Ergonomics.Reach analysis by frames', command6)
+	-- command6:setMenuText("Run Reach Envelope Analysis")
+	-- command6:setHelpText("Builds a coloured reach envelope mesh per manikin from icosphere grip targets.")
+	-- command6:setHelpTextInToolbar(true)
+	-- command6:setToolTipText("Builds a coloured reach envelope mesh per manikin from icosphere grip targets.")
+	-- command6:setToolTipInMenu(true)
+	-- command6:setHotkeyName("Reach analysis by frames.Run Reach Envelope Analysis")
+
+	-- 8. Reach envelope analysis (UV sphere):
+	command7 = Plugin.createCommand("doReachEnvelopeAnalysisUV()")
+	Plugin.addToMenu('Vehicle Ergonomics.Reach analysis by frames', command7)
+	command7:setMenuText("Run Reach Envelope Analysis")
+	command7:setHelpText("Builds a coloured reach envelope mesh per manikin using a UV (lat/lon) sphere.")
+	command7:setHelpTextInToolbar(true)
+	command7:setToolTipText("Builds a coloured reach envelope mesh per manikin using a UV (lat/lon) sphere.")
+	command7:setToolTipInMenu(true)
+	command7:setHotkeyName("Reach analysis by frames.Run Reach Envelope Analysis")
+
 end
 
 
@@ -83,6 +113,23 @@ end
 function doReachSpecificFrame()
 	dofile(scriptPath.."/ReachAnalysis.lua");
 	fam = selectManikinFamily();
-	ReachFrameNr(fam); 
+	ReachFrameNr(fam);
+end
+
+function doCreateIcospherePoints()
+	dofile(scriptPath.."/ReachAnalysis.lua");
+	CreateIcospherePoints();
+end
+
+function doReachEnvelopeAnalysisIco()
+	dofile(scriptPath.."/ReachAnalysis.lua");
+	fam = selectManikinFamily();
+	ReachEnvelopeAnalysisIco(fam);
+end
+
+function doReachEnvelopeAnalysisUV()
+	dofile(scriptPath.."/ReachAnalysis.lua");
+	fam = selectManikinFamily();
+	ReachEnvelopeAnalysisUV(fam);
 end
 -- TODO: Write to CSV file and create spheres with colors where manikins tried to reach.

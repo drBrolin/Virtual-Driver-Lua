@@ -60,6 +60,19 @@ function saveStartPostures()
 	end
 end
 
+function assessPostureDreyfuss3D(fam)
+	return Dreyfuss3DAngleVector;
+end
+function assessPostureISO11226(fam)
+	return ISO11226AngleVector;
+end
+function assessCurrentPostureAdv()
+	-- User input with which method to assess with, Dreyfuss 3D, ISO11226, etc.
+	--- EXAMPLE ---
+	Dreyfuss3DAngleVector = assessPostureDreyfuss3D(fam);
+	-- Check if values in Dreyfuss3DAngleVector are within limits and calculate overall comfort score etc.
+end
+
 function assessCurrentPosture()
 	root = Ips.getActiveObjectsRoot();
 	

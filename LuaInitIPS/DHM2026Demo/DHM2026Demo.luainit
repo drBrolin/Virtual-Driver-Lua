@@ -1,0 +1,1076 @@
+dofile(scriptPath.."/../DriverPositionAndEvaluation/geometryImport.lua");
+dofile(scriptPath.."/../ManikinPosture/ManikinPosture.lua"); -- File with defined calculations of different body joint angles.
+dofile(scriptPath.."/../helpFunctions.lua"); --Handles functions for input
+dofile(scriptPath.."/DHM2026Demo.lua"); 
+
+function initPlugin()
+	--Create Distance Measures for family
+	command1 = Plugin.createCommand("createDistanceMeasuresForFamily()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command1)
+	
+	command1:setMenuText("Create Distance Measures for family")
+	command1:setHelpText("Create Distance Measures for each manikin in family.")
+	command1:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command1:setToolTipText("Create Distance Measures for each manikin in family.")
+	command1:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command1:setHotkeyName("DHM 2026 Demo.Create Distance Measures") -- Name of hotkey combination in preferences -> hotkeys dialog	
+
+	--Save start posture
+	command2 = Plugin.createCommand("evaluateComfort()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command2)
+	
+	command2:setMenuText("Evaluate Driver Positions")
+	command2:setHelpText("Evaluate driver positions defined in Lua script.")
+	command2:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command2:setToolTipText("Evaluate driver positions defined in Lua script.")
+	command2:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command2:setHotkeyName("DHM 2026 Demo.Evaluate Driver Positions") -- Name of hotkey combination in preferences -> hotkeys dialog
+
+	--Create scene
+	command3 = Plugin.createCommand("visionAnalysisSimulation()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command3)
+	
+	command3:setMenuText("Vision analysis")
+	command3:setHelpText("Position each manikin in preferred position and evaluates visibility.")
+	command3:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command3:setToolTipText("Position each manikin in preferred position and evaluates visibility.")
+	command3:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command3:setHotkeyName("DHM 2026 Demo.Vision analysis") -- Name of hotkey combination in preferences -> hotkeys dialog	
+	
+	--Create Distance Measures for family
+	command4 = Plugin.createCommand("visualiseTestPositions()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command4)
+	
+	command4:setMenuText("Visualise Test Positions")
+	command4:setHelpText("Visualise Test Positions.")
+	command4:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command4:setToolTipText("Visualise Test Positions.")
+	command4:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command4:setHotkeyName("DHM 2026 Demo.Visualise Test Positions") -- Name of hotkey combination in preferences -> hotkeys dialog	
+	
+	--Save anthropometric measurements
+	command5 = Plugin.createCommand("anthroMeasurements()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command5)
+	
+	command5:setMenuText("Save anthropometric measurements")
+	command5:setHelpText("Save anthropometric measurements.")
+	command5:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command5:setToolTipText("Save anthropometric measurements.")
+	command5:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command5:setHotkeyName("DHM 2026 Demo.Save anthropometric measurements") -- Name of hotkey combination in preferences -> hotkeys dialog	
+	
+	--Visualise chosen configuration
+	command6 = Plugin.createCommand("visualiseConfiguration()")
+	Plugin.addToMenu('Vehicle Ergonomics.DHM 2026 Demo', command6)
+	
+	command6:setMenuText("Visualise chosen configuration")
+	command6:setHelpText("Visualise chosen configuration.")
+	command6:setHelpTextInToolbar(true) -- otherwise only displayed for menu items
+	command6:setToolTipText("Visualise chosen configuration.")
+	command6:setToolTipInMenu(true) -- otherwise only displayed for toolbar buttons
+	command6:setHotkeyName("DHM 2026 Demo.Visualise chosen configuration") -- Name of hotkey combination in preferences -> hotkeys dialog	
+end
+
+--Global variables to save user selection
+SelectedFamily = -1;
+local write_buffer = {};
+local BUFFER_LIMIT = 5000;   -- lines per flush (tune as needed)
+
+function createDistanceMeasuresForFamily()
+	fam = selectManikinFamily();
+	local manikinNr = fam:getNumManikins();
+	print("manikinNr: "..tostring(manikinNr));
+	local famId = fam:getID();	
+	print("famId: "..tostring(famId));
+	
+	local root = Ips.getActiveObjectsRoot();
+	local belowRoot = root:getNextSibling();
+	
+	manikinVector = TreeObjectVector();
+	geometryVector = TreeObjectVector();
+	
+	-- Find Geometry --
+	local obj = root;
+	while (not(obj == nil) and not(obj:equals(belowRoot))) do
+		if (obj:getPublicAttributeValue("DistanceCheck") == "True") then
+			geometryVector:push_back(obj);
+		end
+		obj = obj:getObjectBelow();
+	end
+
+	-- Go through manikin family --
+	obj = root;
+	local found = false;
+	while (not(obj == nil) and not(obj:equals(belowRoot)) and not(found)) do
+		if (obj:isManikinFamilyVisualization()) then
+			local famvis = obj:toManikinFamilyVisualization();
+			local famFound = famvis:getManikinFamily();
+			if famFound:getID() == famId then
+				print("numChildren: "..tostring(obj:getNumChildren()));
+				local manikin = obj:getFirstChild();
+				while (manikin:getType() == "Manikin") do
+					print("Manikin name: "..manikin:getLabel());
+					manikinVector:push_back(manikin);
+					local testDistanceMeasure = Ips.createDistanceMeasure(manikinVector, geometryVector);
+					testDistanceMeasure:setLabel(famvis:getLabel()..", "..manikin:getLabel());
+					print("testDistanceMeasure: "..tostring(testDistanceMeasure:getDistance()));
+					manikinVector:clear();
+					manikin = manikin:getObjectBelow();
+				end	
+				found = true;
+			end
+		end
+		obj = obj:getObjectBelow();
+	end	
+end
+
+function visualiseTestPositions()
+	local staticRoot = Ips.getGeometryRoot();
+	
+	local width_points  = 17;
+	local height_points = 7;
+	local spacing = 0.02;    -- cm
+	local row_shift = 0.01;      -- cm per row
+	local angle_deg = -5;
+	
+	local hPositions = getTestPositions(width_points, height_points, spacing, row_shift, angle_deg, "H-point template");
+	for j = 0, height_points - 1 do      -- rows (Z direction)
+		for i = 0, width_points - 1 do   -- columns (X direction)		
+			local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+			local transDisc = disc:getTWorld();
+			transDisc["tx"] = hPositions[(j+1)][(i+1)][1];
+			transDisc["ty"] = hPositions[(j+1)][(i+1)][2];
+			transDisc["tz"] = hPositions[(j+1)][(i+1)][3];
+			set(transDisc, 'R.r2', Vector3d(0, 0, 1));
+			set(transDisc, 'R.r3', Vector3d(0, -1, 0));
+			disc:setTWorld(transDisc); -- position the disc 
+			disc:setColor(0,0,1);
+			disc:setLabel("Seat_Row_"..tostring(j+1).."_Colum_"..tostring(i+1)); -- naming the disc
+			local groupGeometry = staticRoot:findFirstExactMatch("TestPositions");
+			Ips.moveTreeObject(disc, groupGeometry);
+			groupGeometry:setExpanded(false);			
+		end
+	end
+		
+	local width_points  = 5;
+	local height_points = 5;
+	local spacing = 0.015;    -- cm
+	local angle_deg = 20.9825; -- Should be taken from posObjSW
+	
+	local swPositions = getTestPositions(width_points, height_points, spacing, 0, angle_deg, "SteeringWheel");
+	for j = 0, height_points - 1 do      -- rows (Z direction)
+		for i = 0, width_points - 1 do   -- columns (X direction)			
+			local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+			local transDisc = disc:getTWorld();
+			transDisc["tx"] = swPositions[(j+1)][(i+1)][1];
+			transDisc["ty"] = swPositions[(j+1)][(i+1)][2];
+			transDisc["tz"] = swPositions[(j+1)][(i+1)][3];
+			set(transDisc, 'R.r2', Vector3d(0, 0, 1));
+			set(transDisc, 'R.r3', Vector3d(0, -1, 0));
+			disc:setTWorld(transDisc); -- position the disc 
+			disc:setColor(0,0,1);
+			disc:setLabel("SW_Row_"..tostring(j+1).."_Colum_"..tostring(i+1)); -- naming the disc
+			local groupGeometry = staticRoot:findFirstExactMatch("TestPositions");
+			Ips.moveTreeObject(disc, groupGeometry);
+			groupGeometry:setExpanded(false);			
+		end
+	end
+	
+	local allpoints = Vector3dVector(); -- Creates a vector of 3d vector
+	local posTableVisionL = {};
+	local spacing = 0.25;
+	local startVisionL = {-3.100,-2.400};
+	local endVisionL = {0.700,-0.900};
+	local length_points = math.abs(startVisionL[1]-endVisionL[1])/spacing+1;
+	local width_points = math.abs(startVisionL[2]-endVisionL[2])/spacing+1;
+	print("Points, Length: "..tostring(length_points)..", Width: "..tostring(width_points));
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		posTableVisionL[i+1] = {};
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			posTableVisionL[i+1][j+1] = {startVisionL[1] + i * spacing,startVisionL[2] + j * spacing, 0};
+			local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+			local transDisc = disc:getTWorld();
+			transDisc["tx"] = startVisionL[1] + i * spacing;
+			transDisc["ty"] = startVisionL[2] + j * spacing;
+			transDisc["tz"] = 0;
+			disc:setTWorld(transDisc); -- position the disc 
+			disc:setColor(0,0,1);
+			disc:setLabel("VisionLeft: Row_"..tostring(j+1).."_Col_"..tostring(i+1)); -- naming the disc
+			local groupGeometry = staticRoot:findFirstExactMatch("TestPositions");
+			Ips.moveTreeObject(disc, groupGeometry);
+			groupGeometry:setExpanded(false);			
+		end
+	end
+	
+	local posTableVisionM = {};
+	local spacing = 0.25;
+	local startVisionM = {-3.100,-0.900};
+	local endVisionM = {-1.600,1.100};
+	local length_points = math.abs(startVisionM[1]-endVisionM[1])/spacing+1;
+	local width_points = math.abs(startVisionM[2]-endVisionM[2])/spacing-1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		posTableVisionM[i+1] = {};
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			posTableVisionM[i+1][j+1] = {startVisionM[1] + i * spacing,startVisionM[2] + spacing + j * spacing, 0};
+			local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+			local transDisc = disc:getTWorld();
+			transDisc["tx"] = startVisionM[1] + i * spacing;
+			transDisc["ty"] = startVisionM[2] + spacing + j * spacing;
+			transDisc["tz"] = 0;
+			disc:setTWorld(transDisc); -- position the disc 
+			disc:setColor(0,0,1);
+			disc:setLabel("VisionMid: Row_"..tostring(j+1).."_Col_"..tostring(i+1)); -- naming the disc
+			local groupGeometry = staticRoot:findFirstExactMatch("TestPositions");
+			Ips.moveTreeObject(disc, groupGeometry);
+			groupGeometry:setExpanded(false);			
+		end
+	end
+	
+	local posTableVisionR = {};
+	local spacing = 0.25;
+	local startVisionR = {-3.100,1.100};
+	local endVisionR = {0.700,2.600};
+	local length_points = math.abs(startVisionR[1]-endVisionR[1])/spacing+1;
+	local width_points = math.abs(startVisionR[2]-endVisionR[2])/spacing+1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		posTableVisionR[i+1] = {};
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			posTableVisionR[i+1][j+1] = {startVisionR[1] + i * spacing,startVisionR[2] + j * spacing, 0};
+			local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+			local transDisc = disc:getTWorld();
+			transDisc["tx"] = startVisionR[1] + i * spacing;
+			transDisc["ty"] = startVisionR[2] + j * spacing;
+			transDisc["tz"] = 0;
+			disc:setTWorld(transDisc); -- position the disc 
+			disc:setColor(0,0,1);
+			disc:setLabel("VisionRight: Row_"..tostring(j+1).."_Col_"..tostring(i+1)); -- naming the disc
+			local groupGeometry = staticRoot:findFirstExactMatch("TestPositions");
+			Ips.moveTreeObject(disc, groupGeometry);
+			groupGeometry:setExpanded(false);				
+		end
+	end
+end
+
+function evaluateComfort()
+	--Load files
+	--dofile(scriptPath.."/../DriverPositionAndEvaluation/geometryImport.lua");
+	dofile(scriptPath.."/../DriverPositionAndEvaluation/outputDriverPosture.lua");
+	fam = selectManikinFamily();
+	local famId = fam:getID();	
+	
+	local neutralData = readStartPosture(fam);  -- neutralManikinId, neutralHeadAxisRotationY, neutralTorsoAxisRotationY, neutralPelvisAxisRotationY, neutralAnklePlantarDorsiFlexionRight, neutralAnklePlantarDorsiFlexionLeft
+	-- local testStart = 0;
+	
+	-- Sets up a CSV file to write to
+	--local jointFilenameCSV = scriptPath.."/output/testDataJointAngles.csv"; -- Could be changed to: static string Ips.inputSaveFile( string filter, string directory, string title )
+	local jointFilenameNDjson = Ips.inputSaveFile("*.ndjson", scriptPath, "Select file to save evaluation data to");
+	exportfile = assert(io.open(jointFilenameNDjson, "w"));
+	-- local file = assert(io.open("simulation_results.ndjson", "w"))
+	
+	-- Go through attachment and control points --
+	local attachmentPoints = TreeObjectVector();
+	attachmentPoints = getAttachmentPoints(attachmentPoints);
+	
+	local controlPoints = fam:getControlPoints();
+	
+	local acPair = findAttachmentControlPairs(attachmentPoints, controlPoints);
+	
+	-- H-point template positions --
+	local hPointTemplate = getPositionObject("H-point template");
+	local posObjHpoint = hPointTemplate:toPositionedTreeObject():getTControl();	
+	
+	local wPointSeat  = 17; -- 17
+	local hPointSeat = 7; -- 7
+	local spacing = 0.02;    -- cm
+	local row_shift = 0.01;      -- cm per row
+	local angle_deg = -5;
+	
+	local hPositions = getTestPositions(wPointSeat, hPointSeat, spacing, row_shift, angle_deg, "H-point template");
+	
+	-- Steering wheel positions --
+	local swObject = getPositionObject("SteeringWheel");
+	local posObjSW = swObject:toPositionedTreeObject():getTControl();	
+		
+	local wPointSW  = 5; -- 5
+	local hPointSW = 5; -- 5
+	local spacing = 0.015;    -- cm
+	local angle_deg = 20.9825; -- Should be taken from posObjSW
+	
+	local swPositions = getTestPositions(wPointSW, hPointSW, spacing, 0, angle_deg, "SteeringWheel");
+	
+	local swGrips = TreeObjectVector();
+	swGrips = getSWgrips(swGrips);
+	local okDiff = {};
+	for swGrip = 0, swGrips:size() - 1 do
+		local swGrip = swGrips[swGrip]:toGripPointVisualization():getGripPoint();
+		local gripOffset = swGrip:getOffset();
+		print("gripOffset: "..tostring(gripOffset));
+		okDiff[swGrip+1] = math.sqrt(gripOffset[0]^2+gripOffset[1]^2+gripOffset[2]^2);
+	end
+	
+	local buttockObj = getPositionObject("Buttock");
+	local buttockP = 5; -- 5
+	local buttockLow = 8; -- 8
+	local buttockIncSize = 2;
+	local buttockPositions = {};
+	for buttockInc = 1, buttockP do
+		buttockPositions[buttockInc] = buttockLow+buttockIncSize*(buttockInc-1);
+	end
+	
+	local torsoObj = getPositionObject("Torso");
+	local torsoP = 5;
+	local torsoLow = 16;
+	local torsoIncSize = 2;
+	local torsoPositions = {};
+	for torsoInc = 1, torsoP do
+		torsoPositions[torsoInc] = torsoLow+torsoIncSize*(torsoInc-1);
+	end
+	
+	--- From Wolf et. al, 2022. The effects of stature, age, gender, and posture preferences on preferred joint angles after real driving.
+	local comfortRanges = {};
+	comfortRanges[1] = {5,45}; -- shoulderRange: UpperArmFlexionRT
+	comfortRanges[2] = {5,45}; -- shoulderRange: UpperArmFlexionLT
+	comfortRanges[3] = {77,155}; -- elbowRange: RightElbowFlexion
+	comfortRanges[4] = {77,155}; -- elbowRange: LeftElbowFlexion
+	comfortRanges[5] = {5,34}; -- trunkToVertRange: torsoRecline
+	comfortRanges[6] = {78,118}; -- trunkThighRange: trunkThighRT
+	comfortRanges[7] = {78,118}; -- trunkThighRange: trunkThighLT
+	comfortRanges[8] = {93,137}; -- kneeRange: RightKneeFlexion
+	comfortRanges[9] = {93,137}; -- kneeRange: LeftKneeFlexion
+	comfortRanges[10] = {85,113}; -- ankleRange: RightAnklePlantarDorsiFlexion
+	comfortRanges[11] = {85,113}; -- ankleRange: LeftAnklePlantarDorsiFlexion
+	
+	Ips.alert("Number of conditions that will be tested: " ..tostring(wPointSeat*hPointSeat*buttockP*torsoP*wPointSW*hPointSW));
+	local t0 = os.clock();
+	local famvis = fam:getVisualization();
+	local mRoot = Ips.getMeasuresRoot();
+	local mannames = fam:getManikinNames();
+	for hSeat = 0, hPointSeat - 1 do  -- rows (Z direction)
+	-- for hSeat = 3, 3 do  -- rows (Z direction)
+		for wSeat = 0, wPointSeat - 1 do   -- columns (X direction)
+		-- for wSeat = 10, wPointSeat - 1 do   -- columns (X direction)
+			positionSeat(hPointTemplate, hPositions[(hSeat+1)][(wSeat+1)][1], hPositions[(hSeat+1)][(wSeat+1)][2], hPositions[(hSeat+1)][(wSeat+1)][3]);
+			for buttockInc = 0, buttockP - 1 do 
+				rotateObjectY(buttockObj, buttockPositions[buttockInc+1]);
+				for torsoInc = 0, torsoP - 1 do 
+					rotateObjectY(torsoObj, torsoPositions[torsoInc+1]);
+					for hSW = 0, hPointSW - 1 do  -- rows (Z direction)
+						for wSW = 0, wPointSW - 1 do   -- columns (X direction)	
+							positionSW(swObject, swPositions[(hSW+1)][(wSW+1)][1], swPositions[(hSW+1)][(wSW+1)][2], swPositions[(hSW+1)][(wSW+1)][3]);			
+							
+							--- START EVALUATION ---
+							--fam:attachAndPosition(attachmentPoints);	-- Increase simulation time!		
+							Ips.updateScreen();
+							local condition = hSeat;
+							condition = condition * 17 + wSeat;
+							condition = condition * 5  + buttockInc;
+							condition = condition * 5  + torsoInc;
+							condition = condition * 5  + hSW;
+							condition = condition * 5  + wSW;
+							condition = condition + 1;
+							print("Condition: "..tostring(condition));
+							
+							-- Check all constraint and variables for each manikin	
+							for n = 0, mannames:size() - 1 do
+								local attachOk = 1;
+								-- Check distance measure. --
+								local distMeasure = mRoot:findFirstMatch(famvis:getLabel()..", "..mannames[n]):toDistanceMeasure():getDistance();
+								local testResult = {distMeasure};
+								if distMeasure == 0 then
+									--print("Manikin "..mannames[n].." collides with geometry.");
+									attachOk = 0;
+								else
+									if mannames:size() > 1 then
+										fam:setRepresentative(n);
+									end
+								end
+								-- Attachment points check --
+								local ap = 0;
+								while attachOk == 1 and ap < attachmentPoints:size() do					
+									local apTest = attachmentPoints[ap]:toAttachPointVisualization():getAttachPoint();
+									local transAP = apTest:getTarget();
+									local transCP = controlPoints[acPair[ap+1]]:getTarget();
+									local acPairDiff = transCP["t"] - transAP["t"];-- Translate point relative to frame origin
+									local acPairDiffRot = transAP:inverseRotate(acPairDiff); -- Vector3d Transf3.inverseRotate(Vector3d v) Performs an inverse rotation: inv(T.R)*v Arguments: v: Point to perform an inverse rotation on.
+									local tolerance = apTest:getSymmetricTranslationTolerances(); -- Vector3d ManikinAttachPoint.getSymmetricTranslationTolerances()	-- Returns the translation tolerances in vector: (x, y, z). Unit: [m]		
+									local withinTolerance = 1;
+									local t = 0;
+									while withinTolerance == 1 and t < 3 do
+										if tolerance[t] == 0 then
+											tolerance[t] = 0.005; -- Introduces a +-5 mm tolerance if tolerance is 0.
+										end
+										if math.abs(acPairDiffRot[t]) >  tolerance[t] then
+											withinTolerance = 0;
+										end
+										t = t + 1;
+									end
+									if withinTolerance == 0 then
+										--print("AttachmentPoints "..tostring(ap).." not ok for "..mannames[n]);
+										attachOk = 0; -- Not ok for the current AP.
+									end
+									ap = ap + 1;
+								end
+								-- Steering wheel check --
+								for swGrip = 0, swGrips:size() - 1 do
+									local swGrip = swGrips[swGrip]:toGripPointVisualization():getGripPoint();
+									local transGrip = swGrip:getTarget();
+									local handness = swGrip:getHand();
+									local handName = "Right Hand";
+									if handness == 0 then -- Left
+										handName = "Left Hand";
+									end
+									local transHand = Transf3.newIdentity();
+									for i = 0,controlPoints:size()-1 do
+										if controlPoints[i]:getName() == handName then
+											local handPoint = controlPoints[i];
+											transHand = handPoint:getTarget(); -- gets the coordinates of the hand grip
+										end
+									end
+									local gripDiff = transHand["t"] - transGrip["t"];
+									local testDiff = math.sqrt(gripDiff[0]^2+gripDiff[1]^2+gripDiff[2]^2);
+									if testDiff > okDiff[swGrip+1] then
+										attachOk = 0; -- Not ok for the current SW grip.
+										--print("testDiff (" ..tostring(testDiff).. ") too high for "..mannames[n]);
+									-- else
+										-- print("Point " ..tostring(i+1).. " reached by "..mannames[j]);
+									end
+								end
+								-- Summary of if attachments are ok
+								if attachOk == 0 then
+									--print("Condition "..tostring(condition).." not ok for "..mannames[n]);
+									testResult[#testResult + 1] = 0;
+								else
+									testResult[#testResult + 1] = 1;
+									local comfortOk = 1;
+									local comfortAngles = assessPosture(fam, n, tonumber(neutralData[n][1]), tonumber(neutralData[n][2]), tonumber(neutralData[n][3]), tonumber(neutralData[n][4]), tonumber(neutralData[n][5]));
+									for i = 1, #comfortAngles do
+										if comfortRanges[i][1] > comfortAngles[i] or comfortRanges[i][2] < comfortAngles[i] then
+											comfortOk = 0;
+										end
+									end
+									testResult[#testResult + 1] = comfortOk;
+									if comfortOk == 1 then
+										for i = 1, #comfortAngles do
+											testResult[#testResult + 1] = comfortAngles[i];	
+										end
+										write_record(condition, n+1, testResult);	
+									end
+									-- write_record(condition, n+1, testResult);	
+								end
+							end	
+							--- END EVALUATION ---	
+						end
+					end
+				end
+			end
+		end
+	end
+	positionSW(swObject, posObjSW["tx"], posObjSW["ty"], posObjSW["tz"]);
+	positionSeat(hPointTemplate, posObjHpoint["tx"], posObjHpoint["ty"], posObjHpoint["tz"]);
+	fam:attachAndPosition(attachmentPoints);
+	Ips.updateScreen();
+	
+	-- Final flush
+	if #write_buffer > 0 then
+		flush_buffer();
+	end
+
+	exportfile:close();
+
+	local t1 = os.clock()
+	local dt = t1 - t0
+	print(string.format("Elapsed time: %.6f seconds", dt));
+end
+
+local vision_buffer = {};
+
+function visionAnalysisSimulation()
+	--Load files
+	--dofile(scriptPath.."/../DriverPositionAndEvaluation/geometryImport.lua");
+	dofile(scriptPath.."/../DriverPositionAndEvaluation/outputDriverPosture.lua");
+	dofile(scriptPath.."/../VisionAnalysis/VisionAnalysis.lua");
+	fam = selectManikinFamily();
+	local famId = fam:getID();	
+	
+	local neutralData = readStartPosture(fam);  -- neutralManikinId, neutralHeadAxisRotationY, neutralTorsoAxisRotationY, neutralPelvisAxisRotationY, neutralAnklePlantarDorsiFlexionRight, neutralAnklePlantarDorsiFlexionLeft
+	-- local testStart = 0;
+	
+	-- Sets up a CSV file to write to
+
+	local visionFilenameNDjson = Ips.inputSaveFile("*.ndjson", scriptPath, "Select file to save vision evaluation data to");
+	visionfile = assert(io.open(visionFilenameNDjson, "w"));
+	
+	-- Go through attachment and control points --
+	local attachmentPoints = TreeObjectVector();
+	attachmentPoints = getAttachmentPoints(attachmentPoints);
+	
+	local controlPoints = fam:getControlPoints();
+	
+	local acPair = findAttachmentControlPairs(attachmentPoints, controlPoints);
+	
+	-- H-point template positions --
+	local hPointTemplate = getPositionObject("H-point template");
+	local posObjHpoint = hPointTemplate:toPositionedTreeObject():getTControl();	
+	
+	local wPointSeat  = 17; -- 17
+	local hPointSeat = 7; -- 7
+	local spacing = 0.02;    -- cm
+	local row_shift = 0.01;      -- cm per row
+	local angle_deg = -5;
+	
+	local hPositions = getTestPositions(wPointSeat, hPointSeat, spacing, row_shift, angle_deg, "H-point template");
+	
+	-- Steering wheel positions --
+	local swObject = getPositionObject("SteeringWheel");
+	local posObjSW = swObject:toPositionedTreeObject():getTControl();	
+		
+	local wPointSW  = 5; -- 5
+	local hPointSW = 5; -- 5
+	local spacing = 0.015;    -- cm
+	local angle_deg = 20.9825; -- Should be taken from posObjSW
+	
+	local swPositions = getTestPositions(wPointSW, hPointSW, spacing, 0, angle_deg, "SteeringWheel");
+	
+	local swGrips = TreeObjectVector();
+	swGrips = getSWgrips(swGrips);
+	local okDiff = {};
+	for swGrip = 0, swGrips:size() - 1 do
+		local swGrip = swGrips[swGrip]:toGripPointVisualization():getGripPoint();
+		local gripOffset = swGrip:getOffset();
+		print("gripOffset: "..tostring(gripOffset));
+		okDiff[swGrip+1] = math.sqrt(gripOffset[0]^2+gripOffset[1]^2+gripOffset[2]^2);
+	end
+	
+	local buttockObj = getPositionObject("Buttock");
+	local buttockP = 5; -- 5
+	local buttockLow = 8; -- 8
+	local buttockIncSize = 2;
+	local buttockPositions = {};
+	for buttockInc = 1, buttockP do
+		buttockPositions[buttockInc] = buttockLow+buttockIncSize*(buttockInc-1);
+	end
+	
+	local torsoObj = getPositionObject("Torso");
+	local torsoP = 5; -- 5 
+	local torsoLow = 16; -- 16
+	local torsoIncSize = 2;
+	local torsoPositions = {};
+	for torsoInc = 1, torsoP do
+		torsoPositions[torsoInc] = torsoLow+torsoIncSize*(torsoInc-1);
+	end
+	
+	Ips.alert("Number of conditions that will be tested: " ..tostring(wPointSeat*hPointSeat*buttockP*torsoP*wPointSW*hPointSW));
+	
+	local allViewPoints = Vector3dVector(); -- Creates a vector of 3d vector
+	spacing = 0.25;
+	local startVisionL = {-3.100,-2.400};
+	local endVisionL = {0.700,-0.900};
+	local length_points = math.abs(startVisionL[1]-endVisionL[1])/spacing+1;
+	local width_points = math.abs(startVisionL[2]-endVisionL[2])/spacing+1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionL[1] + i * spacing,startVisionL[2] + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors			
+		end
+	end
+	
+	spacing = 0.25;
+	local startVisionM = {-3.100,-0.900};
+	local endVisionM = {-1.600,1.100};
+	length_points = math.abs(startVisionM[1]-endVisionM[1])/spacing+1;
+	width_points = math.abs(startVisionM[2]-endVisionM[2])/spacing-1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionM[1] + i * spacing,startVisionM[2] + spacing + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors			
+		end
+	end
+	
+	spacing = 0.25;
+	local startVisionR = {-3.100,1.100};
+	local endVisionR = {0.700,2.600};
+	length_points = math.abs(startVisionR[1]-endVisionR[1])/spacing+1;
+	width_points = math.abs(startVisionR[2]-endVisionR[2])/spacing+1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionR[1] + i * spacing,startVisionR[2] + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors					
+		end
+	end
+	local numberOfViewPoints = allViewPoints:size();
+			
+	
+	local t0 = os.clock();
+	local famvis = fam:getVisualization();
+	local mRoot = Ips.getMeasuresRoot();
+	local mannames = fam:getManikinNames();
+	local viewPoint = selectViewPoint();
+	local transViewPoint = viewPoint:getTarget(); -- gets the coordinates of the view point
+	local transViewPointOrigin = transViewPoint; -- Saving the original position to reset it to after the simulation.
+
+	local okCond = {};
+	local okManFile = read_condition_participant_csv(scriptPath.."/okConManBest2.csv");
+	local okMan = {}
+	for _, row in ipairs(okManFile) do
+		local conditionID = row[1]
+		local participantID = row[2]
+		
+		if not okCond[conditionID] then
+			okCond[conditionID] = true;
+		end
+		okMan[conditionID] = okMan[conditionID] or {}
+		okMan[conditionID][participantID] = true;
+	end
+	local testedConfig = 0;
+	
+	for hSeat = 0, hPointSeat - 1 do  -- rows (Z direction)
+		for wSeat = 0, wPointSeat - 1 do   -- columns (X direction)
+	-- for hSeat = 0, 7 do  -- rows (Z direction)
+		-- for wSeat = 0, 17 do   -- columns (X direction)
+			for buttockInc = 0, buttockP - 1 do 
+				for torsoInc = 0, torsoP - 1 do 
+					for hSW = 0, hPointSW - 1 do  -- rows (Z direction)
+						for wSW = 0, wPointSW - 1 do   -- columns (X direction)	
+							local condition = hSeat;
+							condition = condition * 17 + wSeat;
+							condition = condition * 5  + buttockInc;
+							condition = condition * 5  + torsoInc;
+							condition = condition * 5  + hSW;
+							condition = condition * 5  + wSW;
+							condition = condition + 1;
+							--print("Condition: "..tostring(condition));
+							if okCond[condition] then	
+								print("Condition: "..tostring(condition));
+								testedConfig = testedConfig + 1;
+								--- START EVALUATION ONLY IF CONDITION IS OK ---
+								positionSeat(hPointTemplate, hPositions[(hSeat+1)][(wSeat+1)][1], hPositions[(hSeat+1)][(wSeat+1)][2], hPositions[(hSeat+1)][(wSeat+1)][3]);
+								rotateObjectY(buttockObj, buttockPositions[buttockInc+1]);
+								rotateObjectY(torsoObj, torsoPositions[torsoInc+1]);
+								positionSW(swObject, swPositions[(hSW+1)][(wSW+1)][1], swPositions[(hSW+1)][(wSW+1)][2], swPositions[(hSW+1)][(wSW+1)][3]);
+								
+								Ips.updateScreen();
+								--- VISION EVALUATION ---
+								local visionEval = {};
+								for i = 0,numberOfViewPoints-1 do 	
+									local point = allViewPoints[i];
+									
+									----> Step 3: Move to point including offset
+									transViewPoint["tx"] = point[0];
+									transViewPoint["ty"] = point[1]; 
+									transViewPoint["tz"] = point[2];
+									viewPoint:setTarget(transViewPoint);
+									
+									--Ips.updateScreen();	
+									-- For each point check if if line of sight is blocked for the specified member of the specified family	
+									local manVision = {};
+									for n = 0, mannames:size() - 1 do
+										if okMan[condition][n+1] then
+											if viewPoint:isViewBlockedForFamilyMember(fam,n) then
+												manVision[n + 1] = 0;
+											else
+												manVision[n + 1] = 1;
+											end
+										end
+									end
+									visionEval[i+1] = manVision;
+								end
+								
+								-- for i = 0,numberOfViewPoints-1 do
+									-- for n = 0, mannames:size() - 1 do
+										-- -- print("VP"..tostring(i+1).."_M"..tostring(n+1)..": "..tostring(visionEval[i+1][n+1]));									
+									-- end
+								-- end
+					
+								for n = 0, mannames:size() - 1 do
+									if okMan[condition][n+1] then
+										local sum = 0;
+										for i = 0,numberOfViewPoints-1 do
+											local manVision = visionEval[i+1];
+											sum = sum + manVision[n+1];
+											print("Manikin: "..tostring(n+1)..", Vision: "..tostring(manVision[n+1]));
+										end
+										local manVisionEval = sum/numberOfViewPoints;
+										write_vision(condition, n+1, sum, manVisionEval);
+									end
+								end
+								print("Vision analysis done for condition "..tostring(condition));
+					
+								--- END EVALUATION ---
+							end	
+						end	
+					end		
+				end
+			end
+		end
+	end
+	
+	print("testedConfig: "..tostring(testedConfig));
+								
+	-- viewPoint:setTarget(transViewPointOrigin); -- positions the view point in the saved original position
+	-- positionSW(swObject, posObjSW["tx"], posObjSW["ty"], posObjSW["tz"]);
+	-- positionSeat(hPointTemplate, posObjHpoint["tx"], posObjHpoint["ty"], posObjHpoint["tz"]);
+	-- fam:attachAndPosition(attachmentPoints);
+	-- Ips.updateScreen();
+	
+	-- Final flush
+	if #vision_buffer > 0 then
+		flush_vision();
+	end
+
+	visionfile:close();
+
+	local t1 = os.clock()
+	local dt = t1 - t0
+	print(string.format("Elapsed time: %.6f seconds", dt));
+	
+end
+
+function visualiseConfiguration()
+	local staticRoot = Ips.getGeometryRoot();
+	--Load files
+	--dofile(scriptPath.."/../DriverPositionAndEvaluation/geometryImport.lua");
+	dofile(scriptPath.."/../DriverPositionAndEvaluation/outputDriverPosture.lua");
+	dofile(scriptPath.."/../VisionAnalysis/VisionAnalysis.lua");
+	fam = selectManikinFamily();
+	local famId = fam:getID();	
+			
+	-- H-point template positions --
+	local hPointTemplate = getPositionObject("H-point template");
+	local posObjHpoint = hPointTemplate:toPositionedTreeObject():getTControl();	
+	
+	local wPointSeat  = 17; -- 17
+	local hPointSeat = 7; -- 7
+	local spacing = 0.02;    -- cm
+	local row_shift = 0.01;      -- cm per row
+	local angle_deg = -5;
+	
+	local hPositions = getTestPositions(wPointSeat, hPointSeat, spacing, row_shift, angle_deg, "H-point template");
+	
+	-- Steering wheel positions --
+	local swObject = getPositionObject("SteeringWheel");
+	local posObjSW = swObject:toPositionedTreeObject():getTControl();	
+		
+	local wPointSW  = 5; -- 5
+	local hPointSW = 5; -- 5
+	local spacing = 0.015;    -- cm
+	local angle_deg = 20.9825; -- Should be taken from posObjSW
+	
+	local swPositions = getTestPositions(wPointSW, hPointSW, spacing, 0, angle_deg, "SteeringWheel");
+	
+	local swGrips = TreeObjectVector();
+	swGrips = getSWgrips(swGrips);
+	local okDiff = {};
+	for swGrip = 0, swGrips:size() - 1 do
+		local swGrip = swGrips[swGrip]:toGripPointVisualization():getGripPoint();
+		local gripOffset = swGrip:getOffset();
+		print("gripOffset: "..tostring(gripOffset));
+		okDiff[swGrip+1] = math.sqrt(gripOffset[0]^2+gripOffset[1]^2+gripOffset[2]^2);
+	end
+	
+	local buttockObj = getPositionObject("Buttock");
+	local buttockP = 5; -- 5
+	local buttockLow = 8; -- 8
+	local buttockIncSize = 2;
+	local buttockPositions = {};
+	for buttockInc = 1, buttockP do
+		buttockPositions[buttockInc] = buttockLow+buttockIncSize*(buttockInc-1);
+	end
+	
+	local torsoObj = getPositionObject("Torso");
+	local torsoP = 5; -- 5 
+	local torsoLow = 16; -- 16
+	local torsoIncSize = 2;
+	local torsoPositions = {};
+	for torsoInc = 1, torsoP do
+		torsoPositions[torsoInc] = torsoLow+torsoIncSize*(torsoInc-1);
+	end
+	
+	local allViewPoints = Vector3dVector(); -- Creates a vector of 3d vector
+	spacing = 0.25;
+	local startVisionL = {-3.100,-2.400};
+	local endVisionL = {0.700,-0.900};
+	local length_points = math.abs(startVisionL[1]-endVisionL[1])/spacing+1;
+	local width_points = math.abs(startVisionL[2]-endVisionL[2])/spacing+1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionL[1] + i * spacing,startVisionL[2] + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors			
+		end
+	end
+	
+	spacing = 0.25;
+	local startVisionM = {-3.100,-0.900};
+	local endVisionM = {-1.600,1.100};
+	length_points = math.abs(startVisionM[1]-endVisionM[1])/spacing+1;
+	width_points = math.abs(startVisionM[2]-endVisionM[2])/spacing-1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionM[1] + i * spacing,startVisionM[2] + spacing + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors			
+		end
+	end
+	
+	spacing = 0.25;
+	local startVisionR = {-3.100,1.100};
+	local endVisionR = {0.700,2.600};
+	length_points = math.abs(startVisionR[1]-endVisionR[1])/spacing+1;
+	width_points = math.abs(startVisionR[2]-endVisionR[2])/spacing+1;
+	for i = 0, length_points - 1 do      -- rows (X direction)
+		for j = 0, width_points - 1 do   -- columns (Y direction)
+			local point = Vector3d(startVisionR[1] + i * spacing,startVisionR[2] + j * spacing, 0); -- A 3d vector contains coordinates for 3 dimensions
+			allViewPoints:push_back(point); -- Puts the point at the end of the vectors					
+		end
+	end
+	local numberOfViewPoints = allViewPoints:size();	
+	print("numberOfViewPoints: "..tostring(numberOfViewPoints));
+	
+	local t0 = os.clock();
+	local famvis = fam:getVisualization();
+	local mRoot = Ips.getMeasuresRoot();
+	local mannames = fam:getManikinNames();
+	local viewPoint = selectViewPoint();
+	local transViewPoint = viewPoint:getTarget(); -- gets the coordinates of the view point
+	local transViewPointOrigin = transViewPoint; -- Saving the original position to reset it to after the simulation.
+	
+	-- --- Index starts at 0. ---
+	hSeat = 0;
+	wSeat = 7;
+	buttockInc = 2;
+	torsoInc = 1;
+	hSW = 4;
+	wSW = 0;
+	manikinId = 55; -- index starts at 0.
+	--- Index starts at 0. ---
+	-- hSeat = 0;
+	-- wSeat = 5;
+	-- buttockInc = 4;
+	-- torsoInc = 2;
+	-- hSW = 0;
+	-- wSW = 0;
+	-- manikinId = 43; -- index starts at 0.
+	if mannames:size() > 1 then
+		fam:setRepresentative(manikinId);
+	end
+	
+	positionSeat(hPointTemplate, hPositions[(hSeat+1)][(wSeat+1)][1], hPositions[(hSeat+1)][(wSeat+1)][2], hPositions[(hSeat+1)][(wSeat+1)][3]);
+	rotateObjectY(buttockObj, buttockPositions[buttockInc+1]);
+	rotateObjectY(torsoObj, torsoPositions[torsoInc+1]);
+	positionSW(swObject, swPositions[(hSW+1)][(wSW+1)][1], swPositions[(hSW+1)][(wSW+1)][2], swPositions[(hSW+1)][(wSW+1)][3]);
+		
+	Ips.updateScreen();	
+	
+	local condition = hSeat;
+	condition = condition * 17 + wSeat;
+	condition = condition * 5  + buttockInc;
+	condition = condition * 5  + torsoInc;
+	condition = condition * 5  + hSW;
+	condition = condition * 5  + wSW;
+	condition = condition + 1;
+
+	print("Condition: "..tostring(condition));
+		
+	--- VISION EVALUATION ---
+	local visionEval = {};
+	local sum = 0;
+	for i = 0,numberOfViewPoints-1 do 	
+		-- For each z-plane (every x*y point) check if any points on previous plane was visible. 
+		-- -	Otherwise mark all as blocked.
+		point = allViewPoints[i];
+
+		----> Step 3: Move to point including offset
+		transViewPoint["tx"] = point[0];
+		transViewPoint["ty"] = point[1]; 
+		transViewPoint["tz"] = point[2];
+		viewPoint:setTarget(transViewPoint);
+		
+		local spacing = 0.25;
+		local disc = PrimitiveShape.createDisc(0,spacing/2,10,2); -- creates the disc
+		local transDisc = disc:getTWorld();
+		transDisc["tx"] = transViewPoint["tx"];
+		transDisc["ty"] = transViewPoint["ty"];
+		transDisc["tz"] = transViewPoint["tz"];
+		disc:setTWorld(transDisc); -- position the disc 
+		disc:setLabel("Vision point "..tostring(i+1)); -- naming the disc
+		
+		
+		-- For each point check if if line of sight is blocked for the specified member of the specified family	
+		if viewPoint:isViewBlockedForFamilyMember(fam,manikinId) then
+			visionEval[i+1] = 0;
+			disc:setColor(1,0,0);
+		else
+			visionEval[i+1] = 1;
+			disc:setColor(0,1,0);
+		end
+		sum = sum + visionEval[i+1];
+		local groupGeometry = staticRoot:findFirstExactMatch("VisionAnalysisResults");
+		Ips.moveTreeObject(disc, groupGeometry);
+		groupGeometry:setExpanded(false);	
+	end	
+
+	local manVisionEval = sum/numberOfViewPoints;
+	print("Vision analysis, sum: "..tostring(sum)..". manVisionEval: "..tostring(manVisionEval));
+
+	--- END EVALUATION ---
+end
+
+function write_record(condition_id, participant_id, vars)
+	local line = string.format(
+		'{"condition":%d,"participant":%d,"vars":[%s]}\n',
+		condition_id,
+		participant_id,
+		table.concat(vars, ",")
+	)
+
+	write_buffer[#write_buffer + 1] = line
+
+	if #write_buffer >= BUFFER_LIMIT then
+		flush_buffer()
+	end
+end
+
+function flush_buffer()
+	exportfile:write(table.concat(write_buffer))
+	write_buffer = {}
+end
+
+function anthroMeasurements()
+	local anthroFilenameNDjson = Ips.inputSaveFile("*.ndjson", scriptPath, "Select file to save measurement data to");
+	exportfile = assert(io.open(anthroFilenameNDjson, "w"));
+	
+	fam = selectManikinFamily();
+	local mannames = fam:getManikinNames();
+	for n = 0, mannames:size() - 1 do
+		local anthroMeas = {};
+		anthroMeas[#anthroMeas + 1] = fam:getMeasure(n,"Stature (body height)");
+		anthroMeas[#anthroMeas + 1] = fam:getMeasure(n,"Sitting height (erect)");
+		anthroMeas[#anthroMeas + 1] = fam:getMeasure(n,"Shoulder-elbow length");
+		anthroMeas[#anthroMeas + 1] = fam:getMeasure(n,"Knee height");
+		anthroMeas[#anthroMeas + 1] = fam:getMeasure(n,"Buttock-knee length");
+		write_anthro(n+1, mannames[n], anthroMeas);
+	end
+	-- Final flush
+	if #write_buffer > 0 then
+		flush_buffer();
+	end
+	exportfile:close();
+	print("AnthroList saved.");
+end
+
+function write_anthro(participant_id, name, vars)
+	local line = string.format(
+		'{"participant":%d,"name":%s,"vars":[%s]}\n',
+		participant_id,
+		name,
+		table.concat(vars, ",")
+	)
+
+	write_buffer[#write_buffer + 1] = line
+
+	if #write_buffer >= BUFFER_LIMIT then
+		flush_buffer()
+	end
+end
+
+-- function write_vision(condition_id, vision_point, pointCoordX, pointCoordY, pointCoordZ, manVision)
+	-- local line = string.format(
+		-- '{"condition":%d,"visionPoint":%d,"pointCoords":%f,", ":%f,", ":%f,"manVision":[%s]}\n',
+		-- condition_id,
+		-- vision_point,
+		-- pointCoordX, 
+		-- pointCoordY, 
+		-- pointCoordZ,
+		-- table.concat(manVision, ",")
+	-- )
+
+	-- vision_buffer[#vision_buffer + 1] = line
+
+	-- if #vision_buffer >= BUFFER_LIMIT then
+		-- flush_vision()
+	-- end
+-- end
+
+function write_vision(condition_id, participant_id, visionNr, visionEval)
+	local line = string.format(
+		'%d,%d,%d,%f\n',
+		condition_id,
+		participant_id,
+		visionNr,
+		visionEval
+	)
+
+	vision_buffer[#vision_buffer + 1] = line
+
+	if #vision_buffer >= BUFFER_LIMIT then
+		flush_vision()
+	end
+end
+
+function flush_vision()
+	visionfile:write(table.concat(vision_buffer))
+	vision_buffer = {}
+end
+
+function read_integer_csv(filename)
+    local values = {}
+
+    local file, err = io.open(filename, "r")
+    if not file then
+        error("Could not open file: " .. err)
+    end
+
+    for line in file:lines() do
+        -- Trim whitespace
+        line = line:match("^%s*(.-)%s*$")
+
+        if line ~= "" then
+            local num = tonumber(line)
+
+            if not num or math.floor(num) ~= num then
+                file:close()
+                error("Invalid integer value in file: " .. line)
+            end
+
+            values[#values + 1] = num
+        end
+    end
+
+    file:close()
+    return values
+end
+
+function read_condition_participant_csv(filename)
+    local data = {}
+
+    local file, err = io.open(filename, "r")
+    if not file then
+        error("Could not open file: " .. err)
+    end
+
+    for line in file:lines() do
+        -- trim whitespace
+        line = line:match("^%s*(.-)%s*$")
+
+        if line ~= "" then
+            -- match two comma-separated values
+            local c, p = line:match("([^,]+),([^,]+)")
+
+            if not c or not p then
+                file:close()
+                error("Invalid CSV format in line: " .. line)
+            end
+
+            c = tonumber(c)
+            p = tonumber(p)
+
+            if not c or not p then
+                file:close()
+                error("Non-numeric value in line: " .. line)
+            end
+
+            data[#data + 1] = {c, p}
+        end
+    end
+
+    file:close()
+    return data
+end

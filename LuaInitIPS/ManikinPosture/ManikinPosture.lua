@@ -195,8 +195,8 @@ function currentPosture(fam, jointFilenameCSV)
 	jointAngleExportfile:write("HeadLateral,");
 	jointAngleExportfile:write("HeadRotation,");
 	jointAngleExportfile:write("UpperArmflexionRT,");
-	jointAngleExportfile:write("UpperArmElevationRT,");
 	jointAngleExportfile:write("UpperArmflexionLT,");
+	jointAngleExportfile:write("UpperArmElevationRT,");
 	jointAngleExportfile:write("UpperArmElevationLT,");
 	jointAngleExportfile:write("HumeralRotationRT,");
 	jointAngleExportfile:write("HumeralRotationLT,");
@@ -368,9 +368,9 @@ function currentPosture(fam, jointFilenameCSV)
 		
 		--- Elbow flexion/extension
 		jointAngle = fam:getJointAngleForManikin(i, "RightElbow"); 
-			local RightElbowFlexion = 180 - math.deg(jointAngle[0]);
+			local RightElbowFlexion = 170 - math.deg(jointAngle[0]); -- 170 degrees = the upper arm in line with the lower arm
 		jointAngle = fam:getJointAngleForManikin(i, "LeftElbow"); 
-			local LeftElbowFlexion = 180 - math.deg(jointAngle[0]);
+			local LeftElbowFlexion = 170 - math.deg(jointAngle[0]);
 
 		--- Forearm pronation/supination -- (Neutral = 0.2 degrees)
 		jointAngle = fam:getJointAngleForManikin(i, "RightWristRotation"); 
@@ -466,8 +466,8 @@ function currentPosture(fam, jointFilenameCSV)
 		jointAngleExportfile:write(tostring(headLatFlexion)..",");
 		jointAngleExportfile:write(tostring(headRotation)..",");
 		jointAngleExportfile:write(tostring(UpperArmFlexionRT)..",");
-		jointAngleExportfile:write(tostring(UpperArmElevationRT)..",");
 		jointAngleExportfile:write(tostring(UpperArmFlexionLT)..",");
+		jointAngleExportfile:write(tostring(UpperArmElevationRT)..",");
 		jointAngleExportfile:write(tostring(UpperArmElevationLT)..",");
 		jointAngleExportfile:write(tostring(RightUpperArmExternalRot)..",");
 		jointAngleExportfile:write(tostring(LeftUpperArmExternalRot)..",");

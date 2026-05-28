@@ -288,3 +288,36 @@ function positionSeat(activeObject_HpointTemplate, seatPositionX, seatPositionY,
 	trans["tz"] = seatPositionZ;
 	posObj_Seat:setTControl(trans);
 end
+
+function positionObject(activeObject, positionX, positionY, positionZ)
+	local posObj = activeObject:toPositionedTreeObject();
+	local trans = posObj:getTControl(); 
+	trans["tx"] = positionX;
+	trans["ty"] = positionY;
+	trans["tz"] = positionZ;
+	posObj:setTControl(trans);
+end
+
+function getAttachmentPoints(attachmentsP)
+	local root = Ips.getActiveObjectsRoot();
+	local belowRoot = root:getNextSibling();
+	local obj = root;
+
+	while (not(obj == nil) and not(obj:equals(belowRoot))) do
+		-- Get attributes and check if VD_attach is true
+		--local pubAttributes = obj:getAllPublicAttributes();
+		if (obj:getPublicAttributeValue("VD_attach") == "True") then
+			print("VD_attach found");
+			attachmentsP:push_back(obj);
+		end
+		obj = obj:getObjectBelow();
+	end
+
+	return attachmentsP;
+end
+
+function getPositionObject(objectName)
+	root = Ips.getActiveObjectsRoot();
+	posObject = root:findFirstExactMatch(objectName);
+	return posObject;
+end

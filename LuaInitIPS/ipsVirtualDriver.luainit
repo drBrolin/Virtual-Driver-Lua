@@ -5,11 +5,12 @@ function initPlugin()
 	--Plugin.addPluginFolder(scriptPath.."/Optimization") -- Not updated, Replaced by Driver position and evaluation
 	Plugin.addPluginFolder(scriptPath.."/DriverPositionAndEvaluation")
 	Plugin.addPluginFolder(scriptPath.."/ManikinPosture")
-	Plugin.addPluginFolder(scriptPath.."/DriverAngles")
+	-- Plugin.addPluginFolder(scriptPath.."/DriverAngles") -- Not updated, Replaced by Manikin Posture Assessment.
 	--Plugin.addPluginFolder(scriptPath.."/StatModel") -- Not updated
 	Plugin.addPluginFolder(scriptPath.."/VisionAnalysis") -- Vision analysis. Area and display visibility
-	Plugin.addPluginFolder(scriptPath.."/ReachAnalysis") -- Vision analysis. Area and display visibility
+	Plugin.addPluginFolder(scriptPath.."/ReachAnalysis") -- Reach analysis. Point reach and reach envelope (from 2026-R2 with soft constraints)
 	Plugin.addPluginFolder(scriptPath.."/LoadDriverScenes")
+	Plugin.addPluginFolder(scriptPath.."/DHM2026Demo") -- Files necessary for running the test demonstrated in the DHM 2026 paper by Brolin, E. et al.
 		
 	-- Extraction of comfort angles
 	-- Import SAE geometry

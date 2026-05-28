@@ -215,6 +215,29 @@ function evaluateDriverPositions()
 		fam:attachAndPosition(attachmentsP);
 		Ips.updateScreen();
 		
+		-- -- Should add a check for all attachments for each manikin.
+		-- for j = 0, mannames:size() - 1 do
+			-- if mannames:size() > 1 then
+				-- fam:setRepresentative(j);
+			-- end
+			
+			-- for k = 0, attachmentsP:size() - 1 do
+				-- transAttachment = attachmentsP[k]:getTarget(); -- gets the coordinates of the attachment point
+				-- transControl = controlPoint[k]:getTarget(); -- gets the coordinates of the control point
+				-- xDiff = math.abs(transAttachment["tx"]-transControl["tx"]);
+				-- yDiff = math.abs(transAttachment["ty"]-transControl["ty"]);
+				-- zDiff = math.abs(transAttachment["tz"]-transControl["tz"]);
+				
+				-- transTol = translational tolerances
+				-- if xDiff < transTol[0] and yDiff < transTol[1] and zDiff < transTol[2] then
+					-- print("Point " ..tostring(k+1).. " ok for "..mannames[j]);
+				-- else
+					-- notReachedBy = notReachedBy + 1;
+					-- print("Point " ..tostring(k+1).. " not ok for "..mannames[j]);
+				-- end
+			-- end
+		-- end
+		
 		for n = 0, fam:getNumJoints() - 1 do
 			local jointName = fam:getJointName(n);
 			local jointAngle = fam:getJointAngleForManikin(0, jointName);
@@ -237,28 +260,4 @@ function evaluateDriverPositions()
 		jointAngleExportfile:write("\n");
 	end
 	jointAngleExportfile:close();
-end
-
-function getAttachmentPoints(attachmentsP)
-	local root = Ips.getActiveObjectsRoot();
-	local belowRoot = root:getNextSibling();
-	local obj = root;
-
-	while (not(obj == nil) and not(obj:equals(belowRoot))) do
-		-- Get attributes and check if VD_attach is true
-		--local pubAttributes = obj:getAllPublicAttributes();
-		if (obj:getPublicAttributeValue("VD_attach") == "True") then
-			print("VD_attach found");
-			attachmentsP:push_back(obj);
-		end
-		obj = obj:getObjectBelow();
-	end
-
-	return attachmentsP;
-end
-
-function getPositionObject(objectName)
-	root = Ips.getActiveObjectsRoot();
-	posObject = root:findFirstMatch(objectName);
-	return posObject;
 end
